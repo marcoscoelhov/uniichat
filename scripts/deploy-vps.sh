@@ -100,7 +100,7 @@ PY
 PATH=/root/.bun/bin:/root/.local/bin:/usr/local/bin:/usr/bin:/bin bun run web >/tmp/unii-deploy-web.log 2>&1 || fail "web build"
 systemctl restart unii-chat || fail "restart"
 for i in $(seq 1 20); do
-  if systemctl is-active --quiet unii-chat && curl -fsS -o /dev/null http://127.0.0.1:8788/api/hello; then
+  if systemctl is-active --quiet unii-chat && curl -fsS -o /dev/null http://127.0.0.1:8788/api/hello 2>/dev/null; then
     break
   fi
   sleep 0.5
