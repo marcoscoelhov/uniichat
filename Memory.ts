@@ -7,12 +7,14 @@
 // Over the messages grows a binary tree: node (0,i) is message i
 // (or the line it was logged with) in at most NODE bytes, node (l,i)
 // merges (l-1,2i) and (l-1,2i+1). A source that fits is its node; else a
-// compaction writes it: a call like a turn, on the config's COMPACTOR,
+// compaction writes it: a call like a turn, on the config's COMPACTORS,
 // with the same system prompt (`share`, Server.ts), no tools, and its
 // own view (`seen`) up to the node's `ctx`; a line too long is asked
-// anew (build). The call asks till it is answered (AskAI patient: an
-// outage only delays a node, never harms it); answered with no line (a
-// refusal: its input's doing), its node is its source clipped. Every
+// anew (build). The chain is tried in order: one out of quota, gone or
+// silent yields to the next; when none answers, the node waits and is
+// tried again later (Memory.job), never clipped by an outage. Answered
+// with no line (a refusal: its input's doing), its node is its source
+// clipped. Every
 // node builds so, an imported one too; the import's are a side of their
 // own (`side`: the chat's turns don't wait on them). A side is held as
 // the user's credit says (its payer refusing a call holds it:
@@ -50,7 +52,7 @@
 // hash; an agent's log in docs/agent/<Name>.jsonl.
 
 import * as fs from "node:fs";
-import { AskAI, type Ask, type Bill, type Block, type Call, type Img, type Kind, type Pay, type Say, type Served } from "./AskAI.ts";
+import { AskAI, type Ask, type Bill, type Block, type Call, type End, type Img, type Kind, type Pay, type Say, type Served } from "./AskAI.ts";
 import { clip_page, clip_pages } from "./Clip.ts";
 import * as config from "./Config.ts";
 import { Disk } from "./Disk.ts";
@@ -148,6 +150,10 @@ const TRIES = 5;
 // tried again after this long, never at once: an immediate retry would
 // throw again and starve every timer and log
 const RETRY = 60e3;
+// one compactor gets this long to answer before the chain moves on: a
+// summary is small and a healthy local model takes seconds, so a longer
+// silence is a stuck provider, not a slow answer
+const COMPACT_TIMEOUT = 90e3;
 // a view past its `high` merges to half: the chat's 64-128 KB (96 KB on
 // average), the compactions' 16-32 KB (24 KB)
 const HIGH  = 128000;
@@ -764,7 +770,7 @@ export namespace Memory {
     const upto = Math.min(Memory.ctx(l, i), Memory.first(mem, 0, Memory.side(mem, l, i)));
     const blocks = [...Memory.view(mem, upto, mem.seen.parts), task];
     const lines: string[] = [];
-    let end = await Memory.compact(mem, l, i, call ?? Memory.ask(mem, l, i, text, blocks));
+    let end = await Memory.summarize(mem, l, i, text, blocks, call);
     while (end.ok && end.text.trim() !== "") {
       const line = end.text.trim();
       lines.push(line);
@@ -772,7 +778,7 @@ export namespace Memory {
         break;
       }
       const note = { text: Memory.over(line), mark: false };
-      end = await Memory.compact(mem, l, i, Memory.ask(mem, l, i, text, [...blocks, note]));
+      end = await Memory.summarize(mem, l, i, text, [...blocks, note], null);
     }
     if (lines.length === 0 && !end.ok && end.stop !== "fail") {
       throw new Error(end.text);
@@ -782,6 +788,47 @@ export namespace Memory {
     }
     const line = lines.length === 0 ? Memory.cut(Memory.flat(text)) : lines.reduce((a, b) => (Memory.bytes(b) < Memory.bytes(a) ? b : a));
     Memory.store(mem, [{ l, i, text: line }]);
+  }
+
+  // one summary try: the first compactor of the chain that answers (or
+  // refuses its input) wins; one out of quota, gone, or silent for
+  // COMPACT_TIMEOUT yields to the next. `first` is a call already running
+  // for this node (Memory.take). No answer from any of them throws, so
+  // Memory.job tries the chain again later, never clipping the node.
+  export async function summarize(mem: Memory, l: number, i: number, text: string, blocks: Block[], first: Call | null): Promise<End> {
+    let last: End | null = null;
+    for (const [k, pick] of config.COMPACTORS.entries()) {
+      if (mem.done) {
+        break;
+      }
+      const call = k === 0 && first !== null ? first : Memory.ask(mem, l, i, text, blocks, pick);
+      let timedOut = false;
+      let settled = false;
+      const timer = setTimeout(() => {
+        if (!settled) {
+          timedOut = true;
+          call.stop();
+        }
+      }, COMPACT_TIMEOUT);
+      timer.unref?.();
+      let end: End = AskAI.end("stopped");
+      try {
+        end = await Memory.compact(mem, l, i, call);
+      } finally {
+        settled = true;
+        clearTimeout(timer);
+      }
+      if (mem.done || end.ok || end.stop === "fail") {
+        return end;
+      }
+      last = end;
+      const next = config.COMPACTORS[k + 1];
+      // the last failure is logged by Memory.job, which retries the chain
+      if (next !== undefined) {
+        console.error("compactor: node " + l + "/" + i + ": " + Pick.label(pick) + ": " + (timedOut ? "timed out" : end.text) + "; trying " + Pick.label(next));
+      }
+    }
+    return last ?? AskAI.end("no compactor is configured");
   }
 
   // what node (l,i)'s summary serves: an import, or the chat
@@ -812,10 +859,10 @@ export namespace Memory {
     parts.forEach(({ l, i }) => mem.made?.(l, i));
   }
 
-  // a call of node (l,i)'s summary, on the compactor
-  export function ask(mem: Memory, l: number, i: number, text: string, blocks: Block[]): Call {
+  // a try of node (l,i)'s summary, on one compactor of the chain
+  export function ask(mem: Memory, l: number, i: number, text: string, blocks: Block[], pick: Pick = config.COMPACTOR): Call {
     const bill = Memory.bill(mem, l, i, text);
-    return AskAI.ask({ ...mem.share(), ...Pick.ask(config.COMPACTOR), blocks, bill, patient: true, yields: Memory.served(mem, l, i) === "import" ? mem.dir : undefined }, () => {});
+    return AskAI.ask({ ...mem.share(), ...Pick.ask(pick), blocks, bill, patient: false, yields: Memory.served(mem, l, i) === "import" ? mem.dir : undefined }, () => {});
   }
 
   // a summary's try: its call's end, the call held in `calls` till then

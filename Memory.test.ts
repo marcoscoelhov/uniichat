@@ -47,6 +47,8 @@ function line(prefix: string): string {
 let hold = 0;
 let long = 0;
 let longCalls = 0;
+let failModel = "";
+const calls: Record<string, number> = {};
 
 // a compaction that takes `hold` ms, cut at once when its call is stopped
 function held(init: any): Promise<void> {
@@ -68,6 +70,10 @@ const fake = (async (url: string, init: any) => {
     return Response.json({ input_tokens: 1 });
   }
   const body = JSON.parse(init.body);
+  calls[body.model] = (calls[body.model] ?? 0) + 1;
+  if (body.model === failModel) {
+    return Response.json({ type: "error", error: { type: "invalid_request_error", message: "usage limit" } }, { status: 400 });
+  }
   const texts = body.messages[0].content.map((block: any) => block.text);
   const task: string = texts.findLast((text: string) => text.startsWith("Compaction:")) ?? texts.at(-1);
   await held(init);
@@ -87,7 +93,14 @@ const fake = (async (url: string, init: any) => {
   return answer("ok");
 }) as any;
 
-beforeEach(() => { hold = 0; long = 0; longCalls = 0; globalThis.fetch = fake; });
+beforeEach(() => {
+  hold = 0;
+  long = 0;
+  longCalls = 0;
+  failModel = "";
+  for (const key of Object.keys(calls)) delete calls[key];
+  globalThis.fetch = fake;
+});
 
 function sleep(ms: number): Promise<void> {
   return new Promise((ok) => setTimeout(ok, ms));
@@ -238,4 +251,24 @@ test("a line over the limit is asked again, and the fitting one is kept", async 
   expect(Memory.node(mem, { l: 0, i: 0 })).toBe(line("leaf 0"));
   expect(Buffer.byteLength(Memory.node(mem, { l: 0, i: 0 })!)).toBe(400);
   Memory.stop(mem);
+});
+
+test("a compactor that fails falls back to the next", async () => {
+  const dir = DIR + "/fallback";
+  const original = [...config.COMPACTORS];
+  const primary = { vendor: "claude-api" as const, model: "opus-5.5", effort: "medium", speed: "slow" };
+  const fallback = { vendor: "claude-api" as const, model: "haiku-5.5", effort: "medium", speed: "slow" };
+  config.COMPACTORS.splice(0, config.COMPACTORS.length, primary, fallback);
+  failModel = "claude-opus-5-5";
+  const mem = Memory.load(dir, () => SHARE);
+  try {
+    Memory.push(mem, [{ kind: "unii" as const, text: "message " + "word ".repeat(160) }]);
+    await complete(mem, 1);
+    expect(calls["claude-opus-5-5"]).toBe(1);
+    expect(calls["claude-haiku-5-5"]).toBeGreaterThan(0);
+    expect(Memory.node(mem, { l: 0, i: 0 })).toBe(line("leaf 0"));
+  } finally {
+    config.COMPACTORS.splice(0, config.COMPACTORS.length, ...original);
+    Memory.stop(mem);
+  }
 });

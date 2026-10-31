@@ -37,9 +37,26 @@ export const RULES      = config_path(config_get("rules", ""));
 export const AFTER      = config_get("after", "");
 export const PICK       = config_run("pick", config_get("pick", T3 ? "t3-codex:gpt-6.1-sol:medium:slow" : "claude-api:sonnet-5.5:medium:slow"));
 
-// what every compaction runs on, a chat's and an import's alike, whatever
-// the chat's pick
+// what every compaction runs on first, a chat's and an import's alike,
+// whatever the chat's pick
 export const COMPACTOR  = config_run("compactor", config_get("compactor", T3 ? "t3-codex:gpt-6-luna:high:slow" : "claude-api:haiku-5.5:high:slow"));
+
+// The ordered fallbacks: a small, fast, text-only model of the kind that
+// suits a summary, never the chat's expensive pick. The primary above is
+// tried first; these are tried in order if it is out of quota, gone, or
+// silent. A local installation (T3) falls back to the free/cheap local
+// providers; an API server to the other API adapter it offers.
+const T3_COMPACTOR_FALLBACKS = [
+  "t3-opencode:opencode/mimo-v2.6-flash-free:medium:slow",
+  't3-dsh:["opendesign","deepseek-v4.1-flash"]:low:slow',
+  't3-dsh:["deepseek-official","deepseek-flash"]:low:slow',
+  't3-dsh:["opengateway","deepseek/deepseek-v4.1-flash-ultrafast"]:low:slow',
+];
+const API_COMPACTOR_FALLBACKS = [
+  ...(OFFER.vendors.includes("openai-api") ? ["openai-api:gpt-6-luna:medium:slow"] : []),
+  ...(OFFER.vendors.includes("claude-api") ? ["claude-api:haiku-5.5:high:slow"] : []),
+];
+export const COMPACTORS = config_compactors();
 export const AGENTS     = config_get("agents", "") ? config_run("agents", config_get("agents", "")) : null;
 export const WORKERS    = Number(config_get("workers", "0"));
 
@@ -80,6 +97,42 @@ function config_run(key: string, text: string): Pick {
     throw new Error("config: " + key + " is no vendor:model:effort:speed offered here: " + text);
   }
   return pick;
+}
+
+// the ordered chain of compactors: `compactors` (semicolon-separated)
+// replaces the built-in one; otherwise the primary then the fallbacks of
+// this installation (T3 local, or the API adapters offered)
+function config_compactors(): Pick[] {
+  const raw = config_get("compactors", "");
+  const configured = typeof raw === "string" ? raw.trim() : "";
+  const texts = configured
+    ? configured.split(";").map((text) => text.trim()).filter(Boolean)
+    : [Pick.label(COMPACTOR), ...(T3 ? T3_COMPACTOR_FALLBACKS : API_COMPACTOR_FALLBACKS)];
+  const picks: Pick[] = [];
+  for (const [k, text] of texts.entries()) {
+    const vendor = text.split(":")[0] as Vendor;
+    if (!OFFER.vendors.includes(vendor)) {
+      if (k === 0) {
+        throw new Error("config: compactor is no vendor offered here: " + text);
+      }
+      continue;
+    }
+    try {
+      const pick = config_run(k === 0 ? "compactor" : "compactors", text);
+      if (!picks.some((saved) => Pick.label(saved) === Pick.label(pick))) {
+        picks.push(pick);
+      }
+    } catch (err: any) {
+      if (k === 0) {
+        throw err;
+      }
+      console.error("config: compactor fallback skipped: " + text + " (" + err.message + ")");
+    }
+  }
+  if (picks.length === 0) {
+    throw new Error("config: no compactor is offered here");
+  }
+  return picks;
 }
 
 function config_vendors(text: string): Vendor[] {

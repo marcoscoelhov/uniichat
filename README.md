@@ -84,8 +84,11 @@ also be set as the variable `UNII_<KEY>`:
 - `models`: the models offered, by label (Pick.ts; default all).
 - `pick`: what a chat runs on until it picks another,
   `vendor:model:effort:speed` (default `claude-api:sonnet-5.5:medium:slow`).
-- `compactor`: what writes the summaries (default
+- `compactor`: what writes the summaries first (default
   `claude-api:haiku-5.5:high:slow`).
+- `compactors`: the ordered chain that writes summaries,
+  semicolon-separated (`vendor:model:effort:speed`), replacing the built-in
+  fallback chain; the first is the primary and the rest are fallbacks.
 - `agents`: what subagents run on (default: the chat's pick).
 - `work`: the agents' working dirs on each device (default
   ~/.unii/work).
@@ -120,17 +123,22 @@ are excluded. No T3 threads are created by this integration.
 
 Set `"local": "1", "t3": "1"` in `~/.unii/config.json`, run
 `bun run web`, then restart `bun Server.ts`. The default chat uses Codex
-Sol; summaries use Codex Luna. The model button opens a searchable selector
-grouped by provider. Model choice is saved with the chat. A grouped ACP
-catalog (DSH) names each route it serves (`Open Gateway · …`, `Open Design ·
-…`, `DeepSeek oficial · …`), and a model whose id marks it free (OpenCode's
-free roster, `big-pickle`) carries a `grátis` tag.
+Sol; summaries use Codex Luna first, then the built-in fallback chain. The
+model button opens a searchable selector grouped by provider. Model choice
+is saved with the chat. A grouped ACP catalog (DSH) names each route it
+serves (`Open Gateway · …`, `Open Design · …`, `DeepSeek oficial · …`), and
+a model whose id marks it free (OpenCode's free roster, `big-pickle`) carries
+a `grátis` tag.
 
 A compactor of the local integration runs through the same adapter as a
-turn. When its provider is missing (a disabled T3 provider, an expired
-login), the summary waits and is tried again in a minute; it never spins or
-throws away the chat. Set `UNII_COMPACTOR` (or `compactor` in config.json)
-to a working provider, e.g. `t3-opencode:opencode/mimo-v2.6-flash-free:medium:slow`.
+turn. The chain is tried in order: a provider out of quota, gone, or silent
+for 90 s yields to the next; if none answers, the node is tried again in a
+minute. It never spins, clips a node because of an outage, or throws away the
+chat. The built-in local fallbacks are OpenCode MiMo Flash Free, Open Design
+DeepSeek V4.1 Flash, DeepSeek official Flash and Open Gateway Ultrafast —
+small, fast, text-only models, unlike the chat's pick. Set `compactors`
+(semicolon-separated) to replace the chain, or `compactor` for just the
+primary, e.g. `t3-opencode:opencode/mimo-v2.6-flash-free:medium:slow`.
 
 `bun run check:t3` makes one short real call per provider, consuming its
 normal quota, and records connection health outside the chat. To check only

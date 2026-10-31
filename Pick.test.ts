@@ -14,9 +14,10 @@ process.env.UNII_DIR = DIR;
 process.env.UNII_LOCAL = "1";
 process.env.UNII_T3 = "1";
 delete process.env.UNII_MODELS;
+delete process.env.UNII_COMPACTORS;
 
 const { LABELS, Pick, T3_PROVIDERS } = await import("./Pick.ts");
-const { OFFER } = await import("./Config.ts");
+const { OFFER, COMPACTOR, COMPACTORS } = await import("./Config.ts");
 
 const DSH = '["opengateway","deepseek/deepseek-v4.1-flash-ultrafast"]';
 
@@ -40,4 +41,14 @@ test("a saved pick on a JSON-pair model is read back", () => {
   expect(Pick.read(pick, OFFER)).toEqual(pick);
   expect(Pick.model("t3-dsh", DSH)?.id).toBe(DSH);
   expect(Pick.model("t3-dsh", DSH)?.name).toBe("Open Gateway · DeepSeek V4.1 Flash Ultrafast");
+});
+
+test("the compactor chain starts at the primary and falls back to fast, cheap models", () => {
+  const labels = COMPACTORS.map(Pick.label);
+  expect(COMPACTORS[0]).toEqual(COMPACTOR);
+  expect(labels[0]).toBe(Pick.label(COMPACTOR));
+  expect(labels).toContain("t3-opencode:opencode/mimo-v2.6-flash-free:medium:slow");
+  expect(labels).toContain('t3-dsh:["opendesign","deepseek-v4.1-flash"]:low:slow');
+  expect(labels).toContain('t3-dsh:["deepseek-official","deepseek-flash"]:low:slow');
+  expect(labels.length).toBeGreaterThan(1);
 });

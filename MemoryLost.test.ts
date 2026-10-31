@@ -21,14 +21,14 @@ const { Pick } = await import("./Pick.ts");
 const { MASTER } = await import("./Tools.ts");
 import type { Memory as Mem } from "./Memory.ts";
 
-// another test in this process may have read Config first: ask for the
-// local compactor here too
-Object.assign(config.COMPACTOR, { vendor: "t3-opencode", model: "opencode/mimo-v2.6-flash-free", effort: "medium", speed: "slow" });
 const SHARE = { ...Pick.ask(config.PICK), system: MASTER, searches: 0, server: "" };
 
 test("a missing local compactor waits for its next try, not a hot loop", async () => {
-  // the catalog knows opencode, but its command path is gone
+  // the catalog knows opencode, but its command path is gone; one
+  // compactor isolates the retry behavior from the fallback chain
   fs.writeFileSync(DIR + "/t3-runtimes.json", "{}\n");
+  const original = [...config.COMPACTORS];
+  config.COMPACTORS.splice(0, config.COMPACTORS.length, { vendor: "t3-opencode", model: "opencode/mimo-v2.6-flash-free", effort: "medium", speed: "slow" });
   const mem: Mem = Memory.load(DIR + "/chat", () => SHARE);
   const logged: string[] = [];
   const real = console.error;
@@ -42,6 +42,7 @@ test("a missing local compactor waits for its next try, not a hot loop", async (
     expect(mem.retries.size).toBe(1);
   } finally {
     Memory.stop(mem);
+    config.COMPACTORS.splice(0, config.COMPACTORS.length, ...original);
     console.error = real;
   }
   expect(mem.retries.size).toBe(0);
