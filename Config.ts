@@ -48,9 +48,9 @@ export const COMPACTOR  = config_run("compactor", config_get("compactor", T3 ? "
 // providers; an API server to the other API adapter it offers.
 const T3_COMPACTOR_FALLBACKS = [
   "t3-opencode:opencode/mimo-v2.6-flash-free:medium:slow",
-  't3-dsh:["opendesign","deepseek-v4.1-flash"]:low:slow',
-  't3-dsh:["deepseek-official","deepseek-flash"]:low:slow',
-  't3-dsh:["opengateway","deepseek/deepseek-v4.1-flash-ultrafast"]:low:slow',
+  't3-dsh:["opendesign","deepseek-v4.1-flash"]:high:slow',
+  't3-dsh:["deepseek-official","deepseek-flash"]:high:slow',
+  't3-dsh:["opengateway","deepseek/deepseek-v4.1-flash-ultrafast"]:high:slow',
 ];
 const API_COMPACTOR_FALLBACKS = [
   ...(OFFER.vendors.includes("openai-api") ? ["openai-api:gpt-6-luna:medium:slow"] : []),

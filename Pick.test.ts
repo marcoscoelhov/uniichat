@@ -33,6 +33,7 @@ test("dsh lists every model of every provider it serves", () => {
   expect(dsh.models.map((model) => model.label)).toContain("Open Gateway · DeepSeek V4.1 Flash Ultrafast");
   expect(dsh.models.some((model) => model.label.startsWith("Open Design · "))).toBe(true);
   expect(dsh.models.some((model) => model.label.startsWith("DeepSeek oficial · "))).toBe(true);
+  expect(dsh.models.every((model) => model.efforts?.join(",") === "off,high,max")).toBe(true);
   expect(dsh.models.length).toBeGreaterThan(1);
 });
 
@@ -48,7 +49,7 @@ test("the compactor chain starts at the primary and falls back to fast, cheap mo
   expect(COMPACTORS[0]).toEqual(COMPACTOR);
   expect(labels[0]).toBe(Pick.label(COMPACTOR));
   expect(labels).toContain("t3-opencode:opencode/mimo-v2.6-flash-free:medium:slow");
-  expect(labels).toContain('t3-dsh:["opendesign","deepseek-v4.1-flash"]:low:slow');
-  expect(labels).toContain('t3-dsh:["deepseek-official","deepseek-flash"]:low:slow');
+  expect(labels).toContain('t3-dsh:["opendesign","deepseek-v4.1-flash"]:high:slow');
+  expect(labels).toContain('t3-dsh:["deepseek-official","deepseek-flash"]:high:slow');
   expect(labels.length).toBeGreaterThan(1);
 });

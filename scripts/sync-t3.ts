@@ -83,7 +83,12 @@ for (const [id, instance] of Object.entries({ ...builtins, ...settings.providerI
         }
         const reasoning = (session.configOptions ?? []).find((c: any) => /reason|effort|thinking/.test(c.configId ?? c.id ?? ""));
         const efforts = (reasoning?.options ?? []).flatMap((o: any) => o.options ?? [o]).map((o: any) => o.value).filter((v: any) => typeof v === "string" && !v.startsWith("_t3/"));
-        if (found.length) models = found.map((m: any) => ({ ...m, ...(efforts.length ? { efforts } : {}) }));
+        // DSH's models do not share one effort set: Open Gateway and Open
+        // Design offer off/high/max, the DeepSeek routes also low. Keep the
+        // catalog to what every route accepts; a per-model list would need
+        // one session per model.
+        const safe = id === "dsh" ? ["off", "high", "max"] : efforts;
+        if (found.length) models = found.map((m: any) => ({ ...m, ...(safe.length ? { efforts: safe } : {}) }));
         else if (!models.length) models = [{ id: "default", label: "Padrão do provedor" }];
         detail = "ACP conectado · catálogo consultado";
         status = "ready";

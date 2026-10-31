@@ -1462,7 +1462,6 @@
           "label": "Open Gateway \u00b7 DeepSeek V4.1 Flash Ultrafast",
           "efforts": [
             "off",
-            "low",
             "high",
             "max"
           ]
@@ -1472,7 +1471,6 @@
           "label": "Open Design \u00b7 DeepSeek V4.1 Flash",
           "efforts": [
             "off",
-            "low",
             "high",
             "max"
           ]
@@ -1482,7 +1480,6 @@
           "label": "Open Design \u00b7 DeepSeek V4 Flash",
           "efforts": [
             "off",
-            "low",
             "high",
             "max"
           ]
@@ -1492,7 +1489,6 @@
           "label": "Open Design \u00b7 DeepSeek V4 Pro",
           "efforts": [
             "off",
-            "low",
             "high",
             "max"
           ]
@@ -1502,7 +1498,6 @@
           "label": "Open Design \u00b7 DeepSeek V4 Flash Vision (exp)",
           "efforts": [
             "off",
-            "low",
             "high",
             "max"
           ]
@@ -1512,7 +1507,6 @@
           "label": "DeepSeek oficial \u00b7 deepseek-v4-flash",
           "efforts": [
             "off",
-            "low",
             "high",
             "max"
           ]
@@ -1522,7 +1516,6 @@
           "label": "DeepSeek oficial \u00b7 DeepSeek-V4.1-Flash",
           "efforts": [
             "off",
-            "low",
             "high",
             "max"
           ]
@@ -1532,7 +1525,6 @@
           "label": "DeepSeek oficial \u00b7 DeepSeek-V4-Pro",
           "efforts": [
             "off",
-            "low",
             "high",
             "max"
           ]
@@ -1542,7 +1534,6 @@
           "label": "DeepSeek conta \u00b7 DeepSeek-V4.1-Flash",
           "efforts": [
             "off",
-            "low",
             "high",
             "max"
           ]
@@ -1552,7 +1543,6 @@
           "label": "DeepSeek conta \u00b7 DeepSeek-V4-Pro",
           "efforts": [
             "off",
-            "low",
             "high",
             "max"
           ]
