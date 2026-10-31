@@ -2,6 +2,8 @@
   "name": "uniichat",
   "private": true,
   "scripts": {
+    "sync:t3": "bun scripts/sync-t3.ts",
+    "check:t3": "bun scripts/check-t3.ts",
     "test": "bun test --isolate",
     "web": "bun build web/src/main.ts --outfile web/app.js --target browser"
   }

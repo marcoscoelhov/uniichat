@@ -547,9 +547,9 @@ export function view_pick(v: View): Knob[] {
   const rate  = Price.rate(Pick.ask(v.pick).model);
   const price = rate === undefined ? "" : ": $" + rate.input + "/M tokens in, $" + rate.output + "/M out";
   return [
-    { text: model, move: "model", hint: model + price },
+    { text: (v.pick.vendor.startsWith("t3-") ? Pick.vendor(v.pick.vendor) + " / " : "") + (Pick.model(v.pick.vendor, model)?.name ?? model), move: "model", hint: Pick.vendor(v.pick.vendor) + " · " + model + price },
     { text: effort, move: "effort", hint: effort + " effort: how long it thinks first; more is smarter, slower and costs more" },
-    { text: speed, move: "speed", hint: speed + ": ×" + Price.times(speed) + " the price" },
+    ...(v.pick.vendor.startsWith("t3-") ? [] : [{ text: speed, move: "speed" as Move, hint: speed + ": ×" + Price.times(speed) + " the price" }]),
   ];
 }
 

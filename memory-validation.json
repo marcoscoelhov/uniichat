@@ -1,0 +1,98 @@
+{
+  "ok": true,
+  "compactor": {
+    "vendor": "t3-opencode",
+    "model": "opencode/mimo-v2.6-flash-free",
+    "effort": "medium",
+    "speed": "slow"
+  },
+  "seconds": 8,
+  "count": 3,
+  "nodes": [
+    {
+      "l": 0,
+      "i": 0,
+      "compacted": true,
+      "bytes": 173,
+      "oneLine": true,
+      "text": "unii: Preciso lembrar que o projeto Aurora usa Bun, SQLite e um servidor em 127.0.0.1:8788; seguido de ~31 repetições de \"Contexto relevante.\" (filler sem conteúdo novo)."
+    },
+    {
+      "l": 0,
+      "i": 1,
+      "compacted": true,
+      "bytes": 181,
+      "oneLine": true,
+      "text": "unii: Decisão de arquitetura: manter uma única conversa eterna com árvore de memória, sem botão de novo chat; seguido de 31 repetições de \"Detalhe importante.\" sem conteúdo."
+    },
+    {
+      "l": 0,
+      "i": 2,
+      "compacted": true,
+      "bytes": 169,
+      "oneLine": true,
+      "text": "unii: O compactador deve resumir cada mensagem em uma linha de até 512 bytes, sem perder nomes, números e decisões (repetido \"Continuação.\" 33x como preenchimento)."
+    },
+    {
+      "l": 1,
+      "i": 0,
+      "compacted": false,
+      "bytes": 355,
+      "oneLine": false,
+      "text": "unii: Preciso lembrar que o projeto Aurora usa Bun, SQLite e um servidor em 127.0.0.1:8788; seguido de ~31 repetições de \"Contexto relevante.\" (filler sem conteúdo novo).\nunii: Decisão de arquitetura: manter uma única conversa eterna com árvore de memória, sem botão de novo chat; seguido de 31 repetições de \"Detalhe importante.\" sem conteúdo."
+    }
+  ],
+  "view": {
+    "before": {
+      "parts": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ]
+      ],
+      "size": 523,
+      "count": 3
+    },
+    "after": {
+      "parts": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ]
+      ],
+      "size": 523,
+      "count": 3
+    },
+    "restored": true
+  },
+  "files": [
+    {
+      "file": "main.index",
+      "bytes": 48
+    },
+    {
+      "file": "tree.index",
+      "bytes": 80
+    },
+    {
+      "file": "view.json",
+      "bytes": 168
+    }
+  ]
+}

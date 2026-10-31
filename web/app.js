@@ -675,42 +675,42 @@ function block_parse(lines, i) {
     return [null, i + 1];
   }
   if (FENCE.test(line)) {
-    const end2 = runs((l) => !FENCE.test(l));
+    const end = runs((l) => !FENCE.test(l));
     const k = line.trim().slice(3).trim();
-    const x2 = lines.slice(i + 1, end2).join(`
+    const x = lines.slice(i + 1, end).join(`
 `);
-    return [{ $: "Code", k, x: x2 }, end2 + 1];
+    return [{ $: "Code", k, x }, end + 1];
   }
   if (head !== null) {
-    const x2 = span_parse(head[2]);
-    return [{ $: "Head", k: head[1].length, x: x2 }, i + 1];
+    const x = span_parse(head[2]);
+    return [{ $: "Head", k: head[1].length, x }, i + 1];
   }
   if (RULE.test(line)) {
     return [{ $: "Rule" }, i + 1];
   }
   if (QUOT.test(line)) {
-    const end2 = runs((l) => QUOT.test(l));
-    const body = lines.slice(i, end2).map((l) => l.replace(QUOT, ""));
+    const end = runs((l) => QUOT.test(l));
+    const body = lines.slice(i, end).map((l) => l.replace(QUOT, ""));
     return [{ $: "Quot", x: md_parse(body.join(`
-`)) }, end2];
+`)) }, end];
   }
   if (numbered !== null) {
     const item = (l) => list_numbered(l) === numbered;
-    const end2 = runs((l) => item(l) || MORE.test(l));
+    const end = runs((l) => item(l) || MORE.test(l));
     const items = [];
-    for (const l of lines.slice(i, end2)) {
+    for (const l of lines.slice(i, end)) {
       if (item(l)) {
         items.push(l.replace(LIST, ""));
       } else {
         items[items.length - 1] += " " + l.trim();
       }
     }
-    return [{ $: "List", k: numbered, x: items.map(span_parse) }, end2];
+    return [{ $: "List", k: numbered, x: items.map(span_parse) }, end];
   }
   if (ROW.test(line) && BAR.test(lines[i + 1] ?? "")) {
-    const end2 = lines_run(lines, i + 1, (l) => ROW.test(l));
-    const rows = [line, ...lines.slice(i + 2, end2)];
-    return [{ $: "Tabl", x: rows.map(row_cells) }, end2];
+    const end = lines_run(lines, i + 1, (l) => ROW.test(l));
+    const rows = [line, ...lines.slice(i + 2, end)];
+    return [{ $: "Tabl", x: rows.map(row_cells) }, end];
   }
   const end = runs((l, j) => l.trim() !== "" && !block_starts(lines, j));
   const x = lines.slice(i, end).map(span_parse);
@@ -735,8 +735,1576 @@ function row_cells(line) {
   const cells = line.trim().replace(/^\||(?<!\\)\|$/g, "").split(/(?<!\\)\|/);
   return cells.map((c) => span_parse(c.trim().replace(/\\\|/g, "|")));
 }
+// t3-catalog.json
+var t3_catalog_default = {
+  syncedAt: "2026-10-31T21:33:21.726Z",
+  providers: [
+    {
+      id: "codex",
+      name: "Codex",
+      status: "ready",
+      detail: "Conexão testada · resposta recebida",
+      models: [
+        {
+          id: "gpt-6.1-sol",
+          label: "GPT-6.1-Sol",
+          legacy: false,
+          efforts: [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max",
+            "ultra"
+          ]
+        },
+        {
+          id: "gpt-6-astra",
+          label: "GPT-6-Astra",
+          legacy: false,
+          efforts: [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max",
+            "ultra"
+          ]
+        },
+        {
+          id: "gpt-6-luna",
+          label: "GPT-6-Luna",
+          legacy: false,
+          efforts: [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        },
+        {
+          id: "gpt-6-sol",
+          label: "GPT-6-Sol",
+          legacy: false,
+          efforts: [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max",
+            "ultra"
+          ]
+        },
+        {
+          id: "gpt-5.6-sol",
+          label: "GPT-5.6-Sol",
+          legacy: false,
+          efforts: [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max",
+            "ultra"
+          ]
+        },
+        {
+          id: "gpt-5.6-terra",
+          label: "GPT-5.6-Terra",
+          legacy: false,
+          efforts: [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max",
+            "ultra"
+          ]
+        },
+        {
+          id: "gpt-5.6-luna",
+          label: "GPT-5.6-Luna",
+          legacy: false,
+          efforts: [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        },
+        {
+          id: "gpt-5.5",
+          label: "GPT-5.5",
+          legacy: true
+        },
+        {
+          id: "gpt-5.4-mini",
+          label: "GPT-5.4 Mini",
+          legacy: true
+        },
+        {
+          id: "gpt-5.3-codex-spark",
+          label: "GPT-5.3 Codex Spark",
+          legacy: true
+        },
+        {
+          id: "gpt-6.1-terra",
+          label: "GPT-6.1 Terra",
+          efforts: [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max",
+            "ultra"
+          ],
+          legacy: false
+        }
+      ],
+      checkedAt: "2026-10-31T21:34:16.091402+00:00",
+      testedModel: "gpt-6-luna"
+    },
+    {
+      id: "claudeAgent",
+      name: "Claude",
+      status: "needs-attention",
+      detail: "Sem saldo disponível no provedor (402).",
+      models: [
+        {
+          id: "claude-opus-5-5",
+          label: "Claude Opus 5.5",
+          legacy: false,
+          efforts: [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        },
+        {
+          id: "claude-sonnet-5-5",
+          label: "Claude Sonnet 5.5",
+          legacy: false,
+          efforts: [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        },
+        {
+          id: "claude-fable-5-1",
+          label: "Claude Fable 5.1",
+          legacy: false,
+          efforts: [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        },
+        {
+          id: "claude-fable-5",
+          label: "Claude Fable 5",
+          legacy: true,
+          efforts: [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        },
+        {
+          id: "claude-opus-5",
+          label: "Claude Opus 5",
+          legacy: true,
+          efforts: [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        },
+        {
+          id: "claude-opus-4-8",
+          label: "Claude Opus 4.8",
+          legacy: true,
+          efforts: [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        },
+        {
+          id: "claude-opus-4-7",
+          label: "Claude Opus 4.7",
+          legacy: true,
+          efforts: [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        },
+        {
+          id: "claude-opus-4-6",
+          label: "Claude Opus 4.6",
+          legacy: true,
+          efforts: [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        },
+        {
+          id: "claude-opus-4-5",
+          label: "Claude Opus 4.5",
+          legacy: true,
+          efforts: [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        },
+        {
+          id: "claude-sonnet-5",
+          label: "Claude Sonnet 5",
+          legacy: true,
+          efforts: [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        },
+        {
+          id: "claude-sonnet-4-6",
+          label: "Claude Sonnet 4.6",
+          legacy: true,
+          efforts: [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        },
+        {
+          id: "claude-haiku-5-5",
+          label: "Claude Haiku 5.5",
+          legacy: false,
+          efforts: [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        },
+        {
+          id: "claude-haiku-4-5",
+          label: "Claude Haiku 4.5",
+          legacy: true,
+          efforts: [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        }
+      ],
+      checkedAt: "2026-10-31T21:34:16.091402+00:00",
+      testedModel: "claude-haiku-5-5"
+    },
+    {
+      id: "grok",
+      name: "Grok",
+      status: "needs-attention",
+      detail: "Saldo de uso do Grok Build esgotado (402).",
+      models: [
+        {
+          id: "grok-4.7",
+          label: "grok-4.7",
+          efforts: [
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ]
+        },
+        {
+          id: "grok-4.7-build-fast",
+          label: "grok-4.7-build-fast",
+          efforts: [
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ]
+        },
+        {
+          id: "grok-4.6",
+          label: "grok-4.6",
+          efforts: [
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ]
+        },
+        {
+          id: "grok-4.5",
+          label: "grok-4.5",
+          efforts: [
+            "low",
+            "medium",
+            "high"
+          ]
+        }
+      ],
+      checkedAt: "2026-10-31T21:34:16.091402+00:00",
+      testedModel: "grok-4.7-build-fast"
+    },
+    {
+      id: "antigravity",
+      name: "Antigravity",
+      status: "needs-attention",
+      detail: "Processo ACP encerrado pelo sistema (SIGKILL).",
+      models: [
+        {
+          id: "gemini-3.8-flash-high",
+          label: "Gemini 3.8 Flash (High)",
+          legacy: false
+        },
+        {
+          id: "gemini-3.8-flash-medium",
+          label: "Gemini 3.8 Flash (Medium)",
+          legacy: false
+        },
+        {
+          id: "gemini-3.8-flash-low",
+          label: "Gemini 3.8 Flash (Low)",
+          legacy: false
+        },
+        {
+          id: "gemini-3.7-flash-high",
+          label: "Gemini 3.7 Flash (High)",
+          legacy: true
+        },
+        {
+          id: "gemini-3.7-flash-medium",
+          label: "Gemini 3.7 Flash (Medium)",
+          legacy: true
+        },
+        {
+          id: "gemini-3.7-flash-low",
+          label: "Gemini 3.7 Flash (Low)",
+          legacy: true
+        },
+        {
+          id: "gemini-3.6-flash-high",
+          label: "Gemini 3.6 Flash (High)",
+          legacy: true
+        },
+        {
+          id: "gemini-3.6-flash-medium",
+          label: "Gemini 3.6 Flash (Medium)",
+          legacy: true
+        },
+        {
+          id: "gemini-3.6-flash-low",
+          label: "Gemini 3.6 Flash (Low)",
+          legacy: true
+        },
+        {
+          id: "gemini-pro-agent",
+          label: "Gemini 3.1 Pro (High)",
+          legacy: true
+        },
+        {
+          id: "gemini-3.1-pro-low",
+          label: "Gemini 3.1 Pro (Low)",
+          legacy: true
+        }
+      ]
+    },
+    {
+      id: "pi",
+      name: "Pi",
+      status: "needs-attention",
+      detail: "Sessão OAuth expirada. Reconecte o Pi no T3 Code.",
+      models: [
+        {
+          id: "default",
+          label: "Padrão do Pi",
+          efforts: [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        }
+      ],
+      checkedAt: "2026-10-31T21:34:16.091402+00:00",
+      testedModel: "default"
+    },
+    {
+      id: "opencode",
+      name: "OpenCode",
+      status: "ready",
+      detail: "Conexão testada · resposta recebida",
+      models: [
+        {
+          id: "opencode/beam-free",
+          label: "beam-free"
+        },
+        {
+          id: "opencode/big-pickle",
+          label: "big-pickle"
+        },
+        {
+          id: "opencode/deepseek-v4.1-flash-free",
+          label: "deepseek-v4.1-flash-free"
+        },
+        {
+          id: "opencode/flint-40b-free",
+          label: "flint-40b-free"
+        },
+        {
+          id: "opencode/glm-5.3-flash-free",
+          label: "glm-5.3-flash-free"
+        },
+        {
+          id: "opencode/mimo-v2.6-flash-free",
+          label: "mimo-v2.6-flash-free"
+        },
+        {
+          id: "opencode/nemotron-3.5-lightning-free",
+          label: "nemotron-3.5-lightning-free"
+        },
+        {
+          id: "opencode/nemotron-3.5-super-vl-free",
+          label: "nemotron-3.5-super-vl-free"
+        }
+      ],
+      checkedAt: "2026-10-31T21:34:16.091402+00:00",
+      testedModel: "opencode/mimo-v2.6-flash-free"
+    },
+    {
+      id: "hermes",
+      name: "Hermes",
+      status: "ready",
+      detail: "Conexão testada · resposta recebida",
+      models: [
+        {
+          id: "openai-codex:gpt-6-luna",
+          label: "ChatGPT or Codex Subscription · gpt-6-luna"
+        },
+        {
+          id: "openai-codex:gpt-5.6-terra",
+          label: "ChatGPT or Codex Subscription · gpt-5.6-terra"
+        },
+        {
+          id: "openai-codex:gpt-5.6-terra-900k",
+          label: "ChatGPT or Codex Subscription · gpt-5.6-terra-900k"
+        },
+        {
+          id: "openai-codex:gpt-5.6-luna",
+          label: "ChatGPT or Codex Subscription · gpt-5.6-luna"
+        },
+        {
+          id: "openai-codex:gpt-5.6-luna-900k",
+          label: "ChatGPT or Codex Subscription · gpt-5.6-luna-900k"
+        },
+        {
+          id: "xai-oauth:grok-4.6",
+          label: "xAI Grok OAuth (SuperGrok / Premium+) · grok-4.6"
+        },
+        {
+          id: "xai-oauth:grok-4.5",
+          label: "xAI Grok OAuth (SuperGrok / Premium+) · grok-4.5"
+        },
+        {
+          id: "xai-oauth:grok-4.20-0309-non-reasoning",
+          label: "xAI Grok OAuth (SuperGrok / Premium+) · grok-4.20-0309-non-reasoning"
+        },
+        {
+          id: "xai-oauth:grok-build-0.1",
+          label: "xAI Grok OAuth (SuperGrok / Premium+) · grok-build-0.1"
+        },
+        {
+          id: "xai-oauth:grok-4.20-0309-reasoning",
+          label: "xAI Grok OAuth (SuperGrok / Premium+) · grok-4.20-0309-reasoning"
+        },
+        {
+          id: "xai-oauth:grok-4.7",
+          label: "xAI Grok OAuth (SuperGrok / Premium+) · grok-4.7"
+        },
+        {
+          id: "xai-oauth:grok-4.3",
+          label: "xAI Grok OAuth (SuperGrok / Premium+) · grok-4.3"
+        },
+        {
+          id: "xai-oauth:grok-4.20-multi-agent-0309",
+          label: "xAI Grok OAuth (SuperGrok / Premium+) · grok-4.20-multi-agent-0309"
+        },
+        {
+          id: "xai-oauth:grok-imagine-image",
+          label: "xAI Grok OAuth (SuperGrok / Premium+) · grok-imagine-image"
+        },
+        {
+          id: "xai-oauth:grok-imagine-image-quality",
+          label: "xAI Grok OAuth (SuperGrok / Premium+) · grok-imagine-image-quality"
+        },
+        {
+          id: "xai-oauth:grok-imagine-video",
+          label: "xAI Grok OAuth (SuperGrok / Premium+) · grok-imagine-video"
+        },
+        {
+          id: "xai-oauth:grok-imagine-video-1.5",
+          label: "xAI Grok OAuth (SuperGrok / Premium+) · grok-imagine-video-1.5"
+        },
+        {
+          id: "xai-oauth:grok-imagine-video-1.5-lite",
+          label: "xAI Grok OAuth (SuperGrok / Premium+) · grok-imagine-video-1.5-lite"
+        },
+        {
+          id: "xai-oauth:grok-composer-2.5-fast",
+          label: "xAI Grok OAuth (SuperGrok / Premium+) · grok-composer-2.5-fast"
+        },
+        {
+          id: "ai-gateway:moonshotai/kimi-k2.6",
+          label: "Vercel AI Gateway · moonshotai/kimi-k2.6"
+        },
+        {
+          id: "ai-gateway:alibaba/qwen3.6-plus",
+          label: "Vercel AI Gateway · alibaba/qwen3.6-plus"
+        },
+        {
+          id: "ai-gateway:zai/glm-5.1",
+          label: "Vercel AI Gateway · zai/glm-5.1"
+        },
+        {
+          id: "ai-gateway:minimax/minimax-m2.7",
+          label: "Vercel AI Gateway · minimax/minimax-m2.7"
+        },
+        {
+          id: "ai-gateway:anthropic/claude-sonnet-4.6",
+          label: "Vercel AI Gateway · anthropic/claude-sonnet-4.6"
+        },
+        {
+          id: "ai-gateway:anthropic/claude-opus-4.7",
+          label: "Vercel AI Gateway · anthropic/claude-opus-4.7"
+        },
+        {
+          id: "ai-gateway:anthropic/claude-opus-4.6",
+          label: "Vercel AI Gateway · anthropic/claude-opus-4.6"
+        },
+        {
+          id: "ai-gateway:anthropic/claude-haiku-4.5",
+          label: "Vercel AI Gateway · anthropic/claude-haiku-4.5"
+        },
+        {
+          id: "ai-gateway:openai/gpt-5.4",
+          label: "Vercel AI Gateway · openai/gpt-5.4"
+        },
+        {
+          id: "ai-gateway:openai/gpt-5.4-mini",
+          label: "Vercel AI Gateway · openai/gpt-5.4-mini"
+        },
+        {
+          id: "ai-gateway:openai/gpt-5.3-codex",
+          label: "Vercel AI Gateway · openai/gpt-5.3-codex"
+        },
+        {
+          id: "ai-gateway:google/gemini-3.1-pro-preview",
+          label: "Vercel AI Gateway · google/gemini-3.1-pro-preview"
+        },
+        {
+          id: "ai-gateway:google/gemini-3-flash",
+          label: "Vercel AI Gateway · google/gemini-3-flash"
+        },
+        {
+          id: "ai-gateway:google/gemini-3.1-flash-lite-preview",
+          label: "Vercel AI Gateway · google/gemini-3.1-flash-lite-preview"
+        },
+        {
+          id: "ai-gateway:xai/grok-4.20-reasoning",
+          label: "Vercel AI Gateway · xai/grok-4.20-reasoning"
+        },
+        {
+          id: "ai-gateway:alibaba/qwen-3-14b",
+          label: "Vercel AI Gateway · alibaba/qwen-3-14b"
+        },
+        {
+          id: "ai-gateway:alibaba/qwen-3-235b",
+          label: "Vercel AI Gateway · alibaba/qwen-3-235b"
+        },
+        {
+          id: "ai-gateway:alibaba/qwen-3-30b",
+          label: "Vercel AI Gateway · alibaba/qwen-3-30b"
+        },
+        {
+          id: "ai-gateway:alibaba/qwen-3-32b",
+          label: "Vercel AI Gateway · alibaba/qwen-3-32b"
+        },
+        {
+          id: "ai-gateway:alibaba/qwen3-coder",
+          label: "Vercel AI Gateway · alibaba/qwen3-coder"
+        },
+        {
+          id: "ai-gateway:alibaba/qwen3-coder-30b-a3b",
+          label: "Vercel AI Gateway · alibaba/qwen3-coder-30b-a3b"
+        },
+        {
+          id: "ai-gateway:alibaba/qwen3-coder-next",
+          label: "Vercel AI Gateway · alibaba/qwen3-coder-next"
+        },
+        {
+          id: "ai-gateway:alibaba/qwen3-embedding-0.6b",
+          label: "Vercel AI Gateway · alibaba/qwen3-embedding-0.6b"
+        },
+        {
+          id: "ai-gateway:alibaba/qwen3-embedding-4b",
+          label: "Vercel AI Gateway · alibaba/qwen3-embedding-4b"
+        },
+        {
+          id: "ai-gateway:alibaba/qwen3-embedding-8b",
+          label: "Vercel AI Gateway · alibaba/qwen3-embedding-8b"
+        },
+        {
+          id: "ai-gateway:alibaba/qwen3-max-thinking",
+          label: "Vercel AI Gateway · alibaba/qwen3-max-thinking"
+        },
+        {
+          id: "ai-gateway:alibaba/qwen3-next-80b-a3b-instruct",
+          label: "Vercel AI Gateway · alibaba/qwen3-next-80b-a3b-instruct"
+        },
+        {
+          id: "ai-gateway:alibaba/qwen3-next-80b-a3b-thinking",
+          label: "Vercel AI Gateway · alibaba/qwen3-next-80b-a3b-thinking"
+        },
+        {
+          id: "ai-gateway:alibaba/qwen3-vl-instruct",
+          label: "Vercel AI Gateway · alibaba/qwen3-vl-instruct"
+        },
+        {
+          id: "ai-gateway:alibaba/qwen3.5-flash",
+          label: "Vercel AI Gateway · alibaba/qwen3.5-flash"
+        },
+        {
+          id: "ai-gateway:alibaba/qwen3.5-plus",
+          label: "Vercel AI Gateway · alibaba/qwen3.5-plus"
+        },
+        {
+          id: "ai-gateway:alibaba/qwen3.6-27b",
+          label: "Vercel AI Gateway · alibaba/qwen3.6-27b"
+        },
+        {
+          id: "ai-gateway:alibaba/qwen3.7-flash",
+          label: "Vercel AI Gateway · alibaba/qwen3.7-flash"
+        },
+        {
+          id: "ai-gateway:alibaba/qwen3.7-max",
+          label: "Vercel AI Gateway · alibaba/qwen3.7-max"
+        },
+        {
+          id: "ai-gateway:alibaba/qwen3.7-plus",
+          label: "Vercel AI Gateway · alibaba/qwen3.7-plus"
+        },
+        {
+          id: "ai-gateway:alibaba/qwen3.8-2.4t-a95b",
+          label: "Vercel AI Gateway · alibaba/qwen3.8-2.4t-a95b"
+        },
+        {
+          id: "ai-gateway:alibaba/qwen3.8-27b",
+          label: "Vercel AI Gateway · alibaba/qwen3.8-27b"
+        },
+        {
+          id: "ai-gateway:alibaba/qwen3.8-flash",
+          label: "Vercel AI Gateway · alibaba/qwen3.8-flash"
+        },
+        {
+          id: "ai-gateway:alibaba/qwen3.8-max",
+          label: "Vercel AI Gateway · alibaba/qwen3.8-max"
+        },
+        {
+          id: "ai-gateway:alibaba/qwen3.8-max-0902",
+          label: "Vercel AI Gateway · alibaba/qwen3.8-max-0902"
+        },
+        {
+          id: "ai-gateway:alibaba/qwen3.8-max-prime",
+          label: "Vercel AI Gateway · alibaba/qwen3.8-max-prime"
+        },
+        {
+          id: "ai-gateway:alibaba/qwen3.8-omni-flash",
+          label: "Vercel AI Gateway · alibaba/qwen3.8-omni-flash"
+        },
+        {
+          id: "ai-gateway:alibaba/wan-v2.5-t2v-preview",
+          label: "Vercel AI Gateway · alibaba/wan-v2.5-t2v-preview"
+        },
+        {
+          id: "ai-gateway:alibaba/wan-v2.6-i2v",
+          label: "Vercel AI Gateway · alibaba/wan-v2.6-i2v"
+        },
+        {
+          id: "ai-gateway:alibaba/wan-v2.6-i2v-flash",
+          label: "Vercel AI Gateway · alibaba/wan-v2.6-i2v-flash"
+        },
+        {
+          id: "ai-gateway:alibaba/wan-v2.6-r2v",
+          label: "Vercel AI Gateway · alibaba/wan-v2.6-r2v"
+        },
+        {
+          id: "ai-gateway:alibaba/wan-v2.6-r2v-flash",
+          label: "Vercel AI Gateway · alibaba/wan-v2.6-r2v-flash"
+        },
+        {
+          id: "ai-gateway:alibaba/wan-v2.6-t2v",
+          label: "Vercel AI Gateway · alibaba/wan-v2.6-t2v"
+        },
+        {
+          id: "ai-gateway:alibaba/wan-v2.7-r2v",
+          label: "Vercel AI Gateway · alibaba/wan-v2.7-r2v"
+        },
+        {
+          id: "ai-gateway:alibaba/wan-v2.7-t2v",
+          label: "Vercel AI Gateway · alibaba/wan-v2.7-t2v"
+        },
+        {
+          id: "ai-gateway:alibaba/wan-v3.0-video",
+          label: "Vercel AI Gateway · alibaba/wan-v3.0-video"
+        },
+        {
+          id: "ai-gateway:alibaba/wan-v3.0-video-prime",
+          label: "Vercel AI Gateway · alibaba/wan-v3.0-video-prime"
+        },
+        {
+          id: "ai-gateway:amazon/nova-2-lite",
+          label: "Vercel AI Gateway · amazon/nova-2-lite"
+        },
+        {
+          id: "ai-gateway:amazon/nova-lite",
+          label: "Vercel AI Gateway · amazon/nova-lite"
+        },
+        {
+          id: "ai-gateway:amazon/nova-micro",
+          label: "Vercel AI Gateway · amazon/nova-micro"
+        },
+        {
+          id: "ai-gateway:amazon/nova-pro",
+          label: "Vercel AI Gateway · amazon/nova-pro"
+        },
+        {
+          id: "ai-gateway:amazon/titan-embed-text-v2",
+          label: "Vercel AI Gateway · amazon/titan-embed-text-v2"
+        },
+        {
+          id: "ai-gateway:anthropic/claude-fable-5",
+          label: "Vercel AI Gateway · anthropic/claude-fable-5"
+        },
+        {
+          id: "ai-gateway:anthropic/claude-fable-5-batch",
+          label: "Vercel AI Gateway · anthropic/claude-fable-5-batch"
+        },
+        {
+          id: "ai-gateway:anthropic/claude-fable-5.1",
+          label: "Vercel AI Gateway · anthropic/claude-fable-5.1"
+        },
+        {
+          id: "ai-gateway:anthropic/claude-fable-5.1-batch",
+          label: "Vercel AI Gateway · anthropic/claude-fable-5.1-batch"
+        },
+        {
+          id: "ai-gateway:anthropic/claude-haiku-4.5-batch",
+          label: "Vercel AI Gateway · anthropic/claude-haiku-4.5-batch"
+        },
+        {
+          id: "ai-gateway:anthropic/claude-haiku-5.5",
+          label: "Vercel AI Gateway · anthropic/claude-haiku-5.5"
+        },
+        {
+          id: "ai-gateway:anthropic/claude-haiku-5.5-batch",
+          label: "Vercel AI Gateway · anthropic/claude-haiku-5.5-batch"
+        },
+        {
+          id: "ai-gateway:anthropic/claude-opus-4.5",
+          label: "Vercel AI Gateway · anthropic/claude-opus-4.5"
+        },
+        {
+          id: "ai-gateway:anthropic/claude-opus-4.5-batch",
+          label: "Vercel AI Gateway · anthropic/claude-opus-4.5-batch"
+        },
+        {
+          id: "ai-gateway:anthropic/claude-opus-4.6-batch",
+          label: "Vercel AI Gateway · anthropic/claude-opus-4.6-batch"
+        },
+        {
+          id: "ai-gateway:anthropic/claude-opus-4.7-batch",
+          label: "Vercel AI Gateway · anthropic/claude-opus-4.7-batch"
+        },
+        {
+          id: "ai-gateway:anthropic/claude-opus-4.8",
+          label: "Vercel AI Gateway · anthropic/claude-opus-4.8"
+        },
+        {
+          id: "ai-gateway:anthropic/claude-opus-4.8-fast",
+          label: "Vercel AI Gateway · anthropic/claude-opus-4.8-fast"
+        },
+        {
+          id: "ai-gateway:anthropic/claude-opus-4.8-batch",
+          label: "Vercel AI Gateway · anthropic/claude-opus-4.8-batch"
+        },
+        {
+          id: "ai-gateway:anthropic/claude-opus-5",
+          label: "Vercel AI Gateway · anthropic/claude-opus-5"
+        },
+        {
+          id: "ai-gateway:anthropic/claude-opus-5-fast",
+          label: "Vercel AI Gateway · anthropic/claude-opus-5-fast"
+        },
+        {
+          id: "ai-gateway:anthropic/claude-opus-5-batch",
+          label: "Vercel AI Gateway · anthropic/claude-opus-5-batch"
+        },
+        {
+          id: "ai-gateway:anthropic/claude-opus-5.5",
+          label: "Vercel AI Gateway · anthropic/claude-opus-5.5"
+        },
+        {
+          id: "ai-gateway:anthropic/claude-opus-5.5-fast",
+          label: "Vercel AI Gateway · anthropic/claude-opus-5.5-fast"
+        },
+        {
+          id: "ai-gateway:anthropic/claude-opus-5.5-batch",
+          label: "Vercel AI Gateway · anthropic/claude-opus-5.5-batch"
+        },
+        {
+          id: "ai-gateway:anthropic/claude-sonnet-4.5",
+          label: "Vercel AI Gateway · anthropic/claude-sonnet-4.5"
+        },
+        {
+          id: "ai-gateway:anthropic/claude-sonnet-4.5-batch",
+          label: "Vercel AI Gateway · anthropic/claude-sonnet-4.5-batch"
+        },
+        {
+          id: "ai-gateway:anthropic/claude-sonnet-4.6-batch",
+          label: "Vercel AI Gateway · anthropic/claude-sonnet-4.6-batch"
+        },
+        {
+          id: "ai-gateway:anthropic/claude-sonnet-5",
+          label: "Vercel AI Gateway · anthropic/claude-sonnet-5"
+        },
+        {
+          id: "ai-gateway:anthropic/claude-sonnet-5-batch",
+          label: "Vercel AI Gateway · anthropic/claude-sonnet-5-batch"
+        },
+        {
+          id: "ai-gateway:anthropic/claude-sonnet-5.5",
+          label: "Vercel AI Gateway · anthropic/claude-sonnet-5.5"
+        },
+        {
+          id: "ai-gateway:anthropic/claude-sonnet-5.5-batch",
+          label: "Vercel AI Gateway · anthropic/claude-sonnet-5.5-batch"
+        },
+        {
+          id: "ai-gateway:baseten/elephant-1",
+          label: "Vercel AI Gateway · baseten/elephant-1"
+        },
+        {
+          id: "ai-gateway:baseten/joey-1",
+          label: "Vercel AI Gateway · baseten/joey-1"
+        },
+        {
+          id: "ai-gateway:baseten/mammoth-1",
+          label: "Vercel AI Gateway · baseten/mammoth-1"
+        },
+        {
+          id: "ai-gateway:bfl/flux-2-flex",
+          label: "Vercel AI Gateway · bfl/flux-2-flex"
+        },
+        {
+          id: "ai-gateway:bfl/flux-2-klein-4b",
+          label: "Vercel AI Gateway · bfl/flux-2-klein-4b"
+        },
+        {
+          id: "ai-gateway:bfl/flux-2-klein-9b",
+          label: "Vercel AI Gateway · bfl/flux-2-klein-9b"
+        },
+        {
+          id: "ai-gateway:bfl/flux-2-max",
+          label: "Vercel AI Gateway · bfl/flux-2-max"
+        },
+        {
+          id: "ai-gateway:bfl/flux-2-pro",
+          label: "Vercel AI Gateway · bfl/flux-2-pro"
+        },
+        {
+          id: "ai-gateway:bfl/flux-3-image",
+          label: "Vercel AI Gateway · bfl/flux-3-image"
+        },
+        {
+          id: "ai-gateway:bfl/flux-3-image-klein",
+          label: "Vercel AI Gateway · bfl/flux-3-image-klein"
+        },
+        {
+          id: "ai-gateway:bfl/flux-3-video",
+          label: "Vercel AI Gateway · bfl/flux-3-video"
+        },
+        {
+          id: "ai-gateway:bfl/flux-kontext-max",
+          label: "Vercel AI Gateway · bfl/flux-kontext-max"
+        },
+        {
+          id: "ai-gateway:bfl/flux-kontext-pro",
+          label: "Vercel AI Gateway · bfl/flux-kontext-pro"
+        },
+        {
+          id: "ai-gateway:bfl/flux-pro-1.0-fill",
+          label: "Vercel AI Gateway · bfl/flux-pro-1.0-fill"
+        },
+        {
+          id: "ai-gateway:bfl/flux-pro-1.1",
+          label: "Vercel AI Gateway · bfl/flux-pro-1.1"
+        },
+        {
+          id: "ai-gateway:bfl/flux-pro-1.1-ultra",
+          label: "Vercel AI Gateway · bfl/flux-pro-1.1-ultra"
+        },
+        {
+          id: "ai-gateway:bytedance/seed-1.6",
+          label: "Vercel AI Gateway · bytedance/seed-1.6"
+        },
+        {
+          id: "ai-gateway:bytedance/seed-1.8",
+          label: "Vercel AI Gateway · bytedance/seed-1.8"
+        },
+        {
+          id: "ai-gateway:bytedance/seed-2.1-turbo",
+          label: "Vercel AI Gateway · bytedance/seed-2.1-turbo"
+        },
+        {
+          id: "ai-gateway:bytedance/seedance-2.0",
+          label: "Vercel AI Gateway · bytedance/seedance-2.0"
+        },
+        {
+          id: "ai-gateway:bytedance/seedance-2.0-fast",
+          label: "Vercel AI Gateway · bytedance/seedance-2.0-fast"
+        },
+        {
+          id: "ai-gateway:bytedance/seedance-2.0-mini",
+          label: "Vercel AI Gateway · bytedance/seedance-2.0-mini"
+        },
+        {
+          id: "ai-gateway:bytedance/seedance-2.5",
+          label: "Vercel AI Gateway · bytedance/seedance-2.5"
+        },
+        {
+          id: "ai-gateway:bytedance/seedance-v1.0-pro",
+          label: "Vercel AI Gateway · bytedance/seedance-v1.0-pro"
+        },
+        {
+          id: "ai-gateway:bytedance/seedance-v1.0-pro-fast",
+          label: "Vercel AI Gateway · bytedance/seedance-v1.0-pro-fast"
+        },
+        {
+          id: "ai-gateway:bytedance/seedance-v1.5-pro",
+          label: "Vercel AI Gateway · bytedance/seedance-v1.5-pro"
+        },
+        {
+          id: "ai-gateway:bytedance/seedream-4.0",
+          label: "Vercel AI Gateway · bytedance/seedream-4.0"
+        },
+        {
+          id: "ai-gateway:bytedance/seedream-4.5",
+          label: "Vercel AI Gateway · bytedance/seedream-4.5"
+        },
+        {
+          id: "ai-gateway:bytedance/seedream-5.0-lite",
+          label: "Vercel AI Gateway · bytedance/seedream-5.0-lite"
+        },
+        {
+          id: "ai-gateway:bytedance/seedream-5.0-pro",
+          label: "Vercel AI Gateway · bytedance/seedream-5.0-pro"
+        },
+        {
+          id: "ai-gateway:callstack/apex",
+          label: "Vercel AI Gateway · callstack/apex"
+        },
+        {
+          id: "ai-gateway:cohere/command-a",
+          label: "Vercel AI Gateway · cohere/command-a"
+        },
+        {
+          id: "ai-gateway:cohere/embed-v4.0",
+          label: "Vercel AI Gateway · cohere/embed-v4.0"
+        },
+        {
+          id: "ai-gateway:cohere/embed-v5.0-fast",
+          label: "Vercel AI Gateway · cohere/embed-v5.0-fast"
+        },
+        {
+          id: "ai-gateway:cohere/embed-v5.0-pro",
+          label: "Vercel AI Gateway · cohere/embed-v5.0-pro"
+        },
+        {
+          id: "ai-gateway:cohere/rerank-v3.5",
+          label: "Vercel AI Gateway · cohere/rerank-v3.5"
+        },
+        {
+          id: "ai-gateway:cohere/rerank-v4-fast",
+          label: "Vercel AI Gateway · cohere/rerank-v4-fast"
+        },
+        {
+          id: "ai-gateway:cohere/rerank-v4-pro",
+          label: "Vercel AI Gateway · cohere/rerank-v4-pro"
+        },
+        {
+          id: "ai-gateway:cohere/rerank-v5-fast",
+          label: "Vercel AI Gateway · cohere/rerank-v5-fast"
+        },
+        {
+          id: "ai-gateway:cohere/rerank-v5-pro",
+          label: "Vercel AI Gateway · cohere/rerank-v5-pro"
+        },
+        {
+          id: "ai-gateway:convaiinnovations/laya",
+          label: "Vercel AI Gateway · convaiinnovations/laya"
+        },
+        {
+          id: "ai-gateway:convaiinnovations/laya-free",
+          label: "Vercel AI Gateway · convaiinnovations/laya-free"
+        },
+        {
+          id: "ai-gateway:deepseek/deepseek-r1",
+          label: "Vercel AI Gateway · deepseek/deepseek-r1"
+        },
+        {
+          id: "ai-gateway:deepseek/deepseek-v3.1",
+          label: "Vercel AI Gateway · deepseek/deepseek-v3.1"
+        },
+        {
+          id: "ai-gateway:deepseek/deepseek-v3.2",
+          label: "Vercel AI Gateway · deepseek/deepseek-v3.2"
+        },
+        {
+          id: "ai-gateway:deepseek/deepseek-v3.2-thinking",
+          label: "Vercel AI Gateway · deepseek/deepseek-v3.2-thinking"
+        },
+        {
+          id: "ai-gateway:deepseek/deepseek-v4-flash",
+          label: "Vercel AI Gateway · deepseek/deepseek-v4-flash"
+        },
+        {
+          id: "ai-gateway:deepseek/deepseek-v4-flash-0731",
+          label: "Vercel AI Gateway · deepseek/deepseek-v4-flash-0731"
+        },
+        {
+          id: "ai-gateway:deepseek/deepseek-v4-flash-vision-exp",
+          label: "Vercel AI Gateway · deepseek/deepseek-v4-flash-vision-exp"
+        },
+        {
+          id: "ai-gateway:deepseek/deepseek-v4-pro",
+          label: "Vercel AI Gateway · deepseek/deepseek-v4-pro"
+        },
+        {
+          id: "ai-gateway:deepseek/deepseek-v4-pro-0813",
+          label: "Vercel AI Gateway · deepseek/deepseek-v4-pro-0813"
+        },
+        {
+          id: "ai-gateway:deepseek/deepseek-v4.1-flash",
+          label: "Vercel AI Gateway · deepseek/deepseek-v4.1-flash"
+        },
+        {
+          id: "ai-gateway:deepseek/deepseek-v4.1-flash-1017",
+          label: "Vercel AI Gateway · deepseek/deepseek-v4.1-flash-1017"
+        },
+        {
+          id: "ai-gateway:deepseek/deepseek-v4.1-flash-1017-fast",
+          label: "Vercel AI Gateway · deepseek/deepseek-v4.1-flash-1017-fast"
+        },
+        {
+          id: "ai-gateway:deepseek/deepseek-v4.1-flash-fast",
+          label: "Vercel AI Gateway · deepseek/deepseek-v4.1-flash-fast"
+        },
+        {
+          id: "ai-gateway:elevenlabs/eleven-flash-v2",
+          label: "Vercel AI Gateway · elevenlabs/eleven-flash-v2"
+        },
+        {
+          id: "ai-gateway:elevenlabs/eleven-flash-v2.5",
+          label: "Vercel AI Gateway · elevenlabs/eleven-flash-v2.5"
+        },
+        {
+          id: "ai-gateway:elevenlabs/eleven-multilingual-v2",
+          label: "Vercel AI Gateway · elevenlabs/eleven-multilingual-v2"
+        },
+        {
+          id: "ai-gateway:elevenlabs/eleven-realtime-v1-max",
+          label: "Vercel AI Gateway · elevenlabs/eleven-realtime-v1-max"
+        },
+        {
+          id: "ai-gateway:elevenlabs/eleven-realtime-v1-mini",
+          label: "Vercel AI Gateway · elevenlabs/eleven-realtime-v1-mini"
+        },
+        {
+          id: "ai-gateway:elevenlabs/eleven-v3",
+          label: "Vercel AI Gateway · elevenlabs/eleven-v3"
+        },
+        {
+          id: "ai-gateway:elevenlabs/eleven-v3-conversational",
+          label: "Vercel AI Gateway · elevenlabs/eleven-v3-conversational"
+        },
+        {
+          id: "ai-gateway:elevenlabs/eleven-v4",
+          label: "Vercel AI Gateway · elevenlabs/eleven-v4"
+        },
+        {
+          id: "ai-gateway:elevenlabs/eleven-v4-turbo",
+          label: "Vercel AI Gateway · elevenlabs/eleven-v4-turbo"
+        },
+        {
+          id: "ai-gateway:elevenlabs/music-v2",
+          label: "Vercel AI Gateway · elevenlabs/music-v2"
+        },
+        {
+          id: "ai-gateway:elevenlabs/music-v2.5",
+          label: "Vercel AI Gateway · elevenlabs/music-v2.5"
+        },
+        {
+          id: "ai-gateway:elevenlabs/scribe-v2",
+          label: "Vercel AI Gateway · elevenlabs/scribe-v2"
+        },
+        {
+          id: "ai-gateway:elevenlabs/scribe-v2-realtime",
+          label: "Vercel AI Gateway · elevenlabs/scribe-v2-realtime"
+        },
+        {
+          id: "ai-gateway:elevenlabs/sound-effects-v2",
+          label: "Vercel AI Gateway · elevenlabs/sound-effects-v2"
+        },
+        {
+          id: "ai-gateway:elorian/glimpse",
+          label: "Vercel AI Gateway · elorian/glimpse"
+        },
+        {
+          id: "ai-gateway:fireworks/ember-1",
+          label: "Vercel AI Gateway · fireworks/ember-1"
+        },
+        {
+          id: "ai-gateway:fish-audio/drama-3",
+          label: "Vercel AI Gateway · fish-audio/drama-3"
+        },
+        {
+          id: "ai-gateway:fish-audio/s1",
+          label: "Vercel AI Gateway · fish-audio/s1"
+        },
+        {
+          id: "ai-gateway:fish-audio/s2-pro",
+          label: "Vercel AI Gateway · fish-audio/s2-pro"
+        },
+        {
+          id: "ai-gateway:fish-audio/s2.1-pro",
+          label: "Vercel AI Gateway · fish-audio/s2.1-pro"
+        },
+        {
+          id: "ai-gateway:fish-audio/transcribe-1",
+          label: "Vercel AI Gateway · fish-audio/transcribe-1"
+        },
+        {
+          id: "ai-gateway:google/gemini-2.5-flash",
+          label: "Vercel AI Gateway · google/gemini-2.5-flash"
+        },
+        {
+          id: "ai-gateway:google/gemini-2.5-flash-batch",
+          label: "Vercel AI Gateway · google/gemini-2.5-flash-batch"
+        },
+        {
+          id: "ai-gateway:google/gemini-2.5-flash-image",
+          label: "Vercel AI Gateway · google/gemini-2.5-flash-image"
+        },
+        {
+          id: "ai-gateway:google/gemini-2.5-flash-lite",
+          label: "Vercel AI Gateway · google/gemini-2.5-flash-lite"
+        },
+        {
+          id: "ai-gateway:google/gemini-2.5-flash-lite-batch",
+          label: "Vercel AI Gateway · google/gemini-2.5-flash-lite-batch"
+        },
+        {
+          id: "ai-gateway:google/gemini-2.5-pro",
+          label: "Vercel AI Gateway · google/gemini-2.5-pro"
+        },
+        {
+          id: "ai-gateway:google/gemini-2.5-pro-batch",
+          label: "Vercel AI Gateway · google/gemini-2.5-pro-batch"
+        },
+        {
+          id: "ai-gateway:google/gemini-3-flash-batch",
+          label: "Vercel AI Gateway · google/gemini-3-flash-batch"
+        },
+        {
+          id: "ai-gateway:google/gemini-3-pro-image",
+          label: "Vercel AI Gateway · google/gemini-3-pro-image"
+        },
+        {
+          id: "ai-gateway:google/gemini-3.1-flash-image",
+          label: "Vercel AI Gateway · google/gemini-3.1-flash-image"
+        },
+        {
+          id: "ai-gateway:google/gemini-3.1-flash-image-preview",
+          label: "Vercel AI Gateway · google/gemini-3.1-flash-image-preview"
+        },
+        {
+          id: "ai-gateway:google/gemini-3.1-flash-lite",
+          label: "Vercel AI Gateway · google/gemini-3.1-flash-lite"
+        },
+        {
+          id: "ai-gateway:google/gemini-3.1-flash-lite-batch",
+          label: "Vercel AI Gateway · google/gemini-3.1-flash-lite-batch"
+        },
+        {
+          id: "ai-gateway:google/gemini-3.1-flash-lite-image",
+          label: "Vercel AI Gateway · google/gemini-3.1-flash-lite-image"
+        },
+        {
+          id: "ai-gateway:google/gemini-3.1-pro-preview-batch",
+          label: "Vercel AI Gateway · google/gemini-3.1-pro-preview-batch"
+        },
+        {
+          id: "ai-gateway:google/gemini-3.5-flash",
+          label: "Vercel AI Gateway · google/gemini-3.5-flash"
+        },
+        {
+          id: "ai-gateway:google/gemini-3.5-flash-batch",
+          label: "Vercel AI Gateway · google/gemini-3.5-flash-batch"
+        },
+        {
+          id: "ai-gateway:google/gemini-3.5-flash-lite",
+          label: "Vercel AI Gateway · google/gemini-3.5-flash-lite"
+        },
+        {
+          id: "ai-gateway:google/gemini-3.5-flash-lite-batch",
+          label: "Vercel AI Gateway · google/gemini-3.5-flash-lite-batch"
+        },
+        {
+          id: "ai-gateway:google/gemini-3.5-transcribe",
+          label: "Vercel AI Gateway · google/gemini-3.5-transcribe"
+        },
+        {
+          id: "ai-gateway:google/gemini-3.5-transcribe-live",
+          label: "Vercel AI Gateway · google/gemini-3.5-transcribe-live"
+        },
+        {
+          id: "ai-gateway:google/gemini-3.6-flash",
+          label: "Vercel AI Gateway · google/gemini-3.6-flash"
+        },
+        {
+          id: "ai-gateway:google/gemini-3.6-flash-batch",
+          label: "Vercel AI Gateway · google/gemini-3.6-flash-batch"
+        },
+        {
+          id: "ai-gateway:google/gemini-3.7-flash",
+          label: "Vercel AI Gateway · google/gemini-3.7-flash"
+        },
+        {
+          id: "ai-gateway:google/gemini-3.7-flash-batch",
+          label: "Vercel AI Gateway · google/gemini-3.7-flash-batch"
+        },
+        {
+          id: "ai-gateway:google/gemini-3.8-flash",
+          label: "Vercel AI Gateway · google/gemini-3.8-flash"
+        },
+        {
+          id: "ai-gateway:google/gemini-3.8-flash-lite-tts",
+          label: "Vercel AI Gateway · google/gemini-3.8-flash-lite-tts"
+        },
+        {
+          id: "ai-gateway:google/gemini-3.8-flash-tts",
+          label: "Vercel AI Gateway · google/gemini-3.8-flash-tts"
+        },
+        {
+          id: "ai-gateway:google/gemini-3.8-live",
+          label: "Vercel AI Gateway · google/gemini-3.8-live"
+        },
+        {
+          id: "ai-gateway:google/gemini-3.8-live-extended-thinking",
+          label: "Vercel AI Gateway · google/gemini-3.8-live-extended-thinking"
+        },
+        {
+          id: "ai-gateway:google/gemini-4-argon",
+          label: "Vercel AI Gateway · google/gemini-4-argon"
+        },
+        {
+          id: "ai-gateway:google/gemini-embedding-001",
+          label: "Vercel AI Gateway · google/gemini-embedding-001"
+        },
+        {
+          id: "ai-gateway:google/gemini-embedding-2",
+          label: "Vercel AI Gateway · google/gemini-embedding-2"
+        },
+        {
+          id: "ai-gateway:google/gemini-nano-banana-2.1",
+          label: "Vercel AI Gateway · google/gemini-nano-banana-2.1"
+        },
+        {
+          id: "ai-gateway:google/gemini-omni-flash-preview",
+          label: "Vercel AI Gateway · google/gemini-omni-flash-preview"
+        },
+        {
+          id: "ai-gateway:google/gemma-4-26b-a4b-it",
+          label: "Vercel AI Gateway · google/gemma-4-26b-a4b-it"
+        },
+        {
+          id: "ai-gateway:google/gemma-4-31b-it",
+          label: "Vercel AI Gateway · google/gemma-4-31b-it"
+        },
+        {
+          id: "ai-gateway:google/text-embedding-005",
+          label: "Vercel AI Gateway · google/text-embedding-005"
+        },
+        {
+          id: "ai-gateway:google/text-multilingual-embedding-002",
+          label: "Vercel AI Gateway · google/text-multilingual-embedding-002"
+        },
+        {
+          id: "ai-gateway:google/veo-3.0-fast-generate-001",
+          label: "Vercel AI Gateway · google/veo-3.0-fast-generate-001"
+        },
+        {
+          id: "custom:deepseek/deepseek-v4.1-flash-ultrafast",
+          label: "Custom endpoint · deepseek/deepseek-v4.1-flash-ultrafast"
+        },
+        {
+          id: "opencode-free:beam-free",
+          label: "OpenCode Free · beam-free"
+        },
+        {
+          id: "opencode-free:flint-40b-free",
+          label: "OpenCode Free · flint-40b-free"
+        },
+        {
+          id: "opencode-free:mimo-v2.6-flash-free",
+          label: "OpenCode Free · mimo-v2.6-flash-free"
+        },
+        {
+          id: "opencode-free:nemotron-3.5-super-vl-free",
+          label: "OpenCode Free · nemotron-3.5-super-vl-free"
+        },
+        {
+          id: "opencode-free:nemotron-3.5-lightning-free",
+          label: "OpenCode Free · nemotron-3.5-lightning-free"
+        },
+        {
+          id: "opencode-free:deepseek-v4.1-flash-free",
+          label: "OpenCode Free · deepseek-v4.1-flash-free"
+        },
+        {
+          id: "opencode-free:glm-5.3-flash-free",
+          label: "OpenCode Free · glm-5.3-flash-free"
+        },
+        {
+          id: "custom:opengateway:moonshotai/kimi-k3-ultrafast",
+          label: "OpenGateway · moonshotai/kimi-k3-ultrafast"
+        },
+        {
+          id: "custom:opengateway:deepseek/deepseek-v4.1-flash-ultrafast",
+          label: "OpenGateway · deepseek/deepseek-v4.1-flash-ultrafast"
+        },
+        {
+          id: "custom:opengateway:z-ai/glm-5.3-flash-ultrafast",
+          label: "OpenGateway · z-ai/glm-5.3-flash-ultrafast"
+        },
+        {
+          id: "custom:opendesign:claude-haiku-5.5",
+          label: "OpenDesign · claude-haiku-5.5"
+        },
+        {
+          id: "custom:opendesign:deepseek-v4-flash",
+          label: "OpenDesign · deepseek-v4-flash"
+        },
+        {
+          id: "custom:opendesign:deepseek-v4-flash-vision-exp",
+          label: "OpenDesign · deepseek-v4-flash-vision-exp"
+        },
+        {
+          id: "custom:opendesign:deepseek-v4-pro",
+          label: "OpenDesign · deepseek-v4-pro"
+        },
+        {
+          id: "custom:opendesign:deepseek-v4.1-flash",
+          label: "OpenDesign · deepseek-v4.1-flash"
+        },
+        {
+          id: "custom:opendesign:glm-5.3-flash",
+          label: "OpenDesign · glm-5.3-flash"
+        },
+        {
+          id: "custom:opendesign:glm-5.3-flashx",
+          label: "OpenDesign · glm-5.3-flashx"
+        },
+        {
+          id: "custom:opendesign:gpt-6-luna",
+          label: "OpenDesign · gpt-6-luna"
+        },
+        {
+          id: "custom:opendesign:hy4-preview",
+          label: "OpenDesign · hy4-preview"
+        },
+        {
+          id: "custom:opendesign:kimi-k2.7-code",
+          label: "OpenDesign · kimi-k2.7-code"
+        },
+        {
+          id: "custom:opendesign:mimo-v2.6-flash",
+          label: "OpenDesign · mimo-v2.6-flash"
+        },
+        {
+          id: "custom:opendesign:mimo-v2.6-pro",
+          label: "OpenDesign · mimo-v2.6-pro"
+        },
+        {
+          id: "custom:opendesign:minimax-m3.1-flash",
+          label: "OpenDesign · minimax-m3.1-flash"
+        }
+      ],
+      checkedAt: "2026-10-31T21:34:16.091402+00:00",
+      testedModel: "openai-codex:gpt-6-luna"
+    },
+    {
+      id: "dsh",
+      name: "dsh (DeepSeek Harness)",
+      status: "ready",
+      detail: "Conexão testada · resposta recebida",
+      models: [
+        {
+          id: '["opengateway","deepseek/deepseek-v4.1-flash-ultrafast"]',
+          label: "Open Gateway · DeepSeek V4.1 Flash Ultrafast",
+          efforts: [
+            "off",
+            "low",
+            "high",
+            "max"
+          ]
+        },
+        {
+          id: '["opendesign","deepseek-v4.1-flash"]',
+          label: "Open Design · DeepSeek V4.1 Flash",
+          efforts: [
+            "off",
+            "low",
+            "high",
+            "max"
+          ]
+        },
+        {
+          id: '["opendesign","deepseek-v4-flash"]',
+          label: "Open Design · DeepSeek V4 Flash",
+          efforts: [
+            "off",
+            "low",
+            "high",
+            "max"
+          ]
+        },
+        {
+          id: '["opendesign","deepseek-v4-pro"]',
+          label: "Open Design · DeepSeek V4 Pro",
+          efforts: [
+            "off",
+            "low",
+            "high",
+            "max"
+          ]
+        },
+        {
+          id: '["opendesign","deepseek-v4-flash-vision-exp"]',
+          label: "Open Design · DeepSeek V4 Flash Vision (exp)",
+          efforts: [
+            "off",
+            "low",
+            "high",
+            "max"
+          ]
+        },
+        {
+          id: '["deepseek-official","deepseek-v4-flash"]',
+          label: "DeepSeek oficial · deepseek-v4-flash",
+          efforts: [
+            "off",
+            "low",
+            "high",
+            "max"
+          ]
+        },
+        {
+          id: '["deepseek-official","deepseek-flash"]',
+          label: "DeepSeek oficial · DeepSeek-V4.1-Flash",
+          efforts: [
+            "off",
+            "low",
+            "high",
+            "max"
+          ]
+        },
+        {
+          id: '["deepseek-official","deepseek-v4-pro"]',
+          label: "DeepSeek oficial · DeepSeek-V4-Pro",
+          efforts: [
+            "off",
+            "low",
+            "high",
+            "max"
+          ]
+        },
+        {
+          id: '["deepseek-account","deepseek-flash"]',
+          label: "DeepSeek conta · DeepSeek-V4.1-Flash",
+          efforts: [
+            "off",
+            "low",
+            "high",
+            "max"
+          ]
+        },
+        {
+          id: '["deepseek-account","deepseek-v4-pro"]',
+          label: "DeepSeek conta · DeepSeek-V4-Pro",
+          efforts: [
+            "off",
+            "low",
+            "high",
+            "max"
+          ]
+        }
+      ],
+      checkedAt: "2026-10-31T21:34:16.091402+00:00",
+      testedModel: '["opengateway","deepseek/deepseek-v4.1-flash-ultrafast"]'
+    }
+  ]
+};
 
 // Pick.ts
+var T3_PROVIDERS = t3_catalog_default.providers;
+var VENDORS = ["claude-api", "openai-api", ...t3_catalog_default.providers.filter((p) => p.status !== "unavailable").map((p) => `t3-${p.id}`)];
 var OPUS = { label: "opus-5.5", id: "claude-opus-5-5", speeds: ["slow", "fast"] };
 var SONNET = { label: "sonnet-5.5", id: "claude-sonnet-5-5", speeds: ["slow"] };
 var HAIKU = { label: "haiku-5.5", id: "claude-haiku-5-5", speeds: ["slow"] };
@@ -749,29 +2317,43 @@ var MODELS = {
   "claude-api": [OPUS, SONNET, HAIKU],
   "openai-api": OPENAI
 };
+for (const provider of t3_catalog_default.providers) {
+  MODELS[`t3-${provider.id}`] = provider.models.map((m) => ({
+    label: m.id,
+    id: m.id,
+    name: m.label,
+    speeds: ["slow"],
+    efforts: m.efforts?.length ? m.efforts : ["medium"]
+  }));
+}
 var EFFORTS = ["low", "medium", "high", "xhigh", "max"];
 var SPEEDS = ["slow", "fast", "ultrafast"];
 var LABELS = [...new Set(Object.values(MODELS).flat().map((m) => m.label))];
 var Pick;
-((Pick) => {
-  function model(vendor, label2) {
-    return MODELS[vendor].find((m) => m.label === label2);
+((Pick2) => {
+  function model(vendor, label) {
+    return MODELS[vendor]?.find((m) => m.label === label);
   }
-  Pick.model = model;
-  function on(pick, vendor, model2) {
+  Pick2.model = model;
+  function vendor(vendor) {
+    return t3_catalog_default.providers.find((p) => `t3-${p.id}` === vendor)?.name ?? ({ "claude-api": "Anthropic API", "openai-api": "OpenAI API" }[vendor] ?? vendor);
+  }
+  Pick2.vendor = vendor;
+  function on(pick, vendor, model) {
     const below = SPEEDS.slice(0, SPEEDS.indexOf(pick.speed) + 1);
-    const speed = below.filter((s) => model2.speeds.includes(s)).pop() ?? "slow";
-    return { ...pick, vendor, model: model2.label, speed };
+    const speed = below.filter((s) => model.speeds.includes(s)).pop() ?? "slow";
+    const effort = model.efforts && !model.efforts.includes(pick.effort) ? model.efforts.includes("medium") ? "medium" : model.efforts[0] : pick.effort;
+    return { ...pick, vendor, model: model.label, speed, effort };
   }
-  Pick.on = on;
+  Pick2.on = on;
   function models(vendors, labels) {
-    return vendors.flatMap((v) => MODELS[v].filter((m) => labels.includes(m.label)).map((m) => [v, m]));
+    return vendors.flatMap((v) => (MODELS[v] ?? []).filter((m) => labels.includes(m.label)).map((m) => [v, m]));
   }
-  Pick.models = models;
-  function options(pick, move2, { vendors, models: models2 }) {
+  Pick2.models = models;
+  function options(pick, move, { vendors, models }) {
     const speeds = Pick.model(pick.vendor, pick.model)?.speeds ?? [];
-    const all = (vs) => Pick.models(vs, models2).map(([v, m]) => [m.label, Pick.on(pick, v, m)]);
-    switch (move2) {
+    const all = (vs) => Pick.models(vs, models).map(([v, m]) => [m.label, Pick.on(pick, v, m)]);
+    switch (move) {
       case "next":
       case "prev":
       case "model": {
@@ -780,47 +2362,47 @@ var Pick;
       case "up":
       case "down":
       case "effort": {
-        return EFFORTS.map((effort) => [effort, { ...pick, effort }]);
+        return (Pick.model(pick.vendor, pick.model)?.efforts ?? EFFORTS).map((effort) => [effort, { ...pick, effort }]);
       }
       case "speed": {
         return speeds.map((speed) => [speed, { ...pick, speed }]);
       }
     }
   }
-  Pick.options = options;
-  function move(pick, move2, offer, to) {
-    const list = Pick.options(pick, move2, offer);
+  Pick2.options = options;
+  function move(pick, move, offer, to) {
+    const list = Pick.options(pick, move, offer);
     const n = list.length;
     const at = list.findIndex(([, p]) => Pick.label(p) === Pick.label(pick));
-    const d = move2 === "prev" || move2 === "down" ? -1 : 1;
-    const ends = move2 === "up" || move2 === "down";
+    const d = move === "prev" || move === "down" ? -1 : 1;
+    const ends = move === "up" || move === "down";
     const next = ends ? Math.max(0, Math.min(n - 1, at + d)) : (at + d + n) % n;
     const like = list.filter(([part]) => part.toLowerCase().includes(String(to).toLowerCase()));
-    const hit = to === undefined ? list[next] : list.find(([part]) => part === to) ?? (like.length === 1 ? like[0] : undefined);
+    const hit = to === undefined ? list[next] : list.find(([, p]) => Pick.label(p) === to) ?? list.find(([part]) => part === to) ?? (like.length === 1 ? like[0] : undefined);
     return hit === undefined ? null : hit[1];
   }
-  Pick.move = move;
+  Pick2.move = move;
   function label(pick) {
     return [pick.vendor, pick.model, pick.effort, pick.speed].join(":");
   }
-  Pick.label = label;
+  Pick2.label = label;
   function ask(pick) {
-    const model2 = Pick.model(pick.vendor, pick.model);
-    return { ...pick, model: model2?.id ?? pick.model };
+    const model = Pick.model(pick.vendor, pick.model);
+    return { ...pick, model: model?.id ?? pick.model };
   }
-  Pick.ask = ask;
+  Pick2.ask = ask;
   function read(x, offer) {
-    const model2 = offer.vendors.includes(x.vendor) && offer.models.includes(x.model) ? Pick.model(x.vendor, x.model) : undefined;
-    if (model2 === undefined || !EFFORTS.includes(x.effort) || !model2.speeds.includes(x.speed)) {
+    const model = offer.vendors.includes(x.vendor) && offer.models.includes(x.model) ? Pick.model(x.vendor, x.model) : undefined;
+    if (model === undefined || !(model.efforts ?? EFFORTS).includes(x.effort) || !model.speeds.includes(x.speed)) {
       return null;
     }
     return { vendor: x.vendor, model: x.model, effort: x.effort, speed: x.speed };
   }
-  Pick.read = read;
+  Pick2.read = read;
   function load(saved, offer, def) {
     return Pick.read(saved ?? def, offer) ?? def;
   }
-  Pick.load = load;
+  Pick2.load = load;
 })(Pick ||= {});
 
 // Price.ts
@@ -842,31 +2424,31 @@ var MINUTES = {
 };
 var SPEEDS2 = { slow: 1, fast: 2, ultrafast: 6 };
 var Price;
-((Price) => {
+((Price2) => {
   function usage(speed) {
     return { input: 0, write: 0, read: 0, output: 0, searches: 0, seconds: 0, speed };
   }
-  Price.usage = usage;
+  Price2.usage = usage;
   function rate(model) {
     return RATES[model];
   }
-  Price.rate = rate;
+  Price2.rate = rate;
   function times(speed) {
     return SPEEDS2[speed] ?? 1;
   }
-  Price.times = times;
+  Price2.times = times;
   function cost(model, use) {
     const long = use.input + use.write + use.read > PROMPT ? LONG[model] : undefined;
-    const rate2 = long ?? RATES[model];
+    const rate = long ?? RATES[model];
     const minute = MINUTES[model];
-    if (rate2 === undefined && minute === undefined) {
+    if (rate === undefined && minute === undefined) {
       throw new Error("no price for " + model);
     }
-    const tokens = rate2 === undefined ? 0 : use.input * rate2.input + use.write * rate2.write + use.read * rate2.read + use.output * rate2.output;
+    const tokens = rate === undefined ? 0 : use.input * rate.input + use.write * rate.write + use.read * rate.read + use.output * rate.output;
     const audio = minute === undefined ? 0 : use.seconds / 60 * minute * 1e6;
     return Math.ceil(tokens * Price.times(use.speed) + use.searches * SEARCH * 1e6 + audio);
   }
-  Price.cost = cost;
+  Price2.cost = cost;
 })(Price ||= {});
 
 // View.ts
@@ -1147,9 +2729,9 @@ function view_pick(v) {
   const rate = Price.rate(Pick.ask(v.pick).model);
   const price = rate === undefined ? "" : ": $" + rate.input + "/M tokens in, $" + rate.output + "/M out";
   return [
-    { text: model, move: "model", hint: model + price },
+    { text: (v.pick.vendor.startsWith("t3-") ? Pick.vendor(v.pick.vendor) + " / " : "") + (Pick.model(v.pick.vendor, model)?.name ?? model), move: "model", hint: Pick.vendor(v.pick.vendor) + " · " + model + price },
     { text: effort, move: "effort", hint: effort + " effort: how long it thinks first; more is smarter, slower and costs more" },
-    { text: speed, move: "speed", hint: speed + ": ×" + Price.times(speed) + " the price" }
+    ...v.pick.vendor.startsWith("t3-") ? [] : [{ text: speed, move: "speed", hint: speed + ": ×" + Price.times(speed) + " the price" }]
   ];
 }
 function view_count(v) {
@@ -1282,8 +2864,8 @@ function part_rows(v, id, n, t, talk) {
   }
   const text = n === 1 ? "fold" : GLYPH.open + " " + n + "x · fold";
   if (n > 1) {
-    const rows2 = [...part_rows(v, id, half, t, talk), ...part_rows(v, id + half, half, t, talk)];
-    return [{ $: "Box", id, n, text, rows: rows2 }];
+    const rows = [...part_rows(v, id, half, t, talk), ...part_rows(v, id + half, half, t, talk)];
+    return [{ $: "Box", id, n, text, rows }];
   }
   const rows = entry === undefined ? [] : whole_rows(id, entry);
   return [{ $: "Box", id, n, text, rows }];
@@ -1442,7 +3024,7 @@ function images_html(names) {
   return names.length === 0 ? "" : `<div class="pics">${pics.join("")}</div>`;
 }
 function pick_html(fold, on, knobs) {
-  const parts = knobs.map((k) => `<button title="${esc(k.hint)}"${act_html({ $: "Move", move: k.move })}>${esc(k.text)}</button>`);
+  const parts = knobs.map((k) => `<button title="${esc(k.hint)}"${k.move === "model" ? ' popovertarget="providers"' : act_html({ $: "Move", move: k.move })}>${esc(k.text)}</button>`);
   const all = fold === null ? [] : [`<button class="all"${act_html({ $: "Fold", on })}>${esc(fold)}</button>`];
   return [...all, `<span class="rule"></span>`, ...parts.flatMap((part, i) => i === 0 ? [part] : [`<span class="dot">·</span>`, part])];
 }
@@ -1633,6 +3215,8 @@ async function boot() {
     return;
   }
   P.id = me.id;
+  if (me.local)
+    localStorage.setItem(kept("welcomed"), "1");
   signed();
   route();
   v.bills = me.bills;
@@ -1718,6 +3302,7 @@ function chat() {
   $("#wallet").insertAdjacentHTML("beforeend", credit_html(APP !== null));
   onpopstate = route;
   importer();
+  provider_setup();
   document.ondragover = (ev) => ev.preventDefault();
   document.ondrop = (ev) => {
     ev.preventDefault();
@@ -1794,6 +3379,61 @@ function act(a) {
     link_send(v, msg, a.$ === "Send" ? (out) => back(a, out) : undefined, said);
   }
   draw(a.$ === "Send");
+}
+function provider_setup() {
+  const popover = $("#providers");
+  const search = $("#providers .provider-search");
+  let selected = null;
+  const render = () => {
+    const query = search.value.trim().toLocaleLowerCase();
+    const vendors = v.vendors;
+    selected = vendors.includes(selected) ? selected : v.pick?.vendor ?? vendors[0];
+    const esc2 = esc;
+    $("#providers .provider-list").innerHTML = vendors.map((vendor) => {
+      const count = Pick.models([vendor], v.models).length;
+      const meta = T3_PROVIDERS.find((p) => `t3-${p.id}` === vendor);
+      return `<button type="button" data-provider="${esc2(vendor)}" aria-pressed="${selected === vendor}" title="${esc2(meta?.detail ?? "API")}"><span><i class="provider-dot ${meta?.status === "ready" ? "ready" : "attention"}"></i>${esc2(Pick.vendor(vendor))}</span><small>${count}</small></button>`;
+    }).join("");
+    for (const button of popover.querySelectorAll("[data-provider]")) {
+      button.onclick = () => {
+        selected = button.dataset.provider;
+        search.value = "";
+        render();
+      };
+    }
+    const shown = query ? vendors : [selected];
+    const groups = shown.map((vendor) => {
+      const meta = T3_PROVIDERS.find((p) => `t3-${p.id}` === vendor);
+      const models = Pick.models([vendor], v.models).filter(([, model]) => !query || `${Pick.vendor(vendor)} ${model.name ?? ""} ${model.id}`.toLocaleLowerCase().includes(query));
+      if (!models.length)
+        return "";
+      const status = meta?.detail ?? "Conexão por chave de API";
+      return `<div class="provider-group"><h3>${esc2(Pick.vendor(vendor))}<span>${models.length}</span></h3><p class="provider-status${meta?.status === "needs-attention" ? " warning" : ""}">${esc2(status)}</p>${models.map(([, model]) => {
+        const on = v.pick?.vendor === vendor && v.pick?.model === model.label;
+        const next = v.pick ? Pick.on(v.pick, vendor, model) : null;
+        const free = /(^|[-_/:.])free($|[-_/:.])/i.test(model.id) || model.id === "opencode/big-pickle";
+        return `<button type="button" class="provider-model${on ? " selected" : ""}" data-pick="${esc2(next ? Pick.label(next) : "")}" aria-pressed="${on}"><span><strong>${esc2(model.name ?? model.label)}${free ? ' <em class="free">grátis</em>' : ""}</strong><small>${esc2(model.id)}</small></span><span class="provider-check">${on ? "✓" : ""}</span></button>`;
+      }).join("")}</div>`;
+    });
+    $("#providers .provider-models").innerHTML = groups.some(Boolean) ? groups.join("") : '<p class="provider-empty">Nenhum modelo encontrado.</p>';
+    for (const button of popover.querySelectorAll("[data-pick]")) {
+      button.onclick = () => {
+        if (button.dataset.pick)
+          act({ $: "Move", move: "model", to: button.dataset.pick });
+        popover.hidePopover();
+        BOX.focus();
+      };
+    }
+  };
+  search.oninput = render;
+  popover.addEventListener("toggle", (event) => {
+    if (event.newState === "open") {
+      selected = v.pick?.vendor ?? null;
+      search.value = "";
+      render();
+      search.focus();
+    }
+  });
 }
 function click(ev) {
   const el = ev.target.closest("[data-act], [data-copy], [data-go], [data-usd]");
@@ -1883,8 +3523,8 @@ function meter(stream, rec) {
   requestAnimationFrame(frame);
 }
 function words(audio) {
-  const act2 = { $: "voice", type: audio.type, body: () => audio };
-  link_send(v, act2, heard);
+  const act = { $: "voice", type: audio.type, body: () => audio };
+  link_send(v, act, heard);
   draw(false);
 }
 function heard(out) {

@@ -11,6 +11,9 @@
 // doesn't offer gives way to def, never to a pick like it.
 
 import type { Vendor } from "./AskAI.ts";
+import catalog from "./t3-catalog.json";
+
+export const T3_PROVIDERS = catalog.providers;
 
 // Types
 // =====
@@ -27,7 +30,7 @@ export type Pick = {
 export type Move = "next" | "prev" | "model" | "up" | "down" | "effort" | "speed";
 
 // a model: as shown, as the vendor names it, its speeds
-export type Model = { label: string; id: string; speeds: string[] };
+export type Model = { label: string; id: string; speeds: string[]; name?: string; efforts?: string[] };
 
 // what a server offers: vendors, and models by label
 export type Offer = { vendors: Vendor[]; models: string[] };
@@ -35,7 +38,7 @@ export type Offer = { vendors: Vendor[]; models: string[] };
 // Constants
 // =========
 
-export const VENDORS: Vendor[] = ["claude-api", "openai-api"];
+export const VENDORS: Vendor[] = ["claude-api", "openai-api", ...catalog.providers.filter((p) => p.status !== "unavailable").map((p) => `t3-${p.id}` as Vendor)];
 
 const OPUS  : Model = { label: "opus-5.5",   id: "claude-opus-5-5",   speeds: ["slow", "fast"] };
 const SONNET: Model = { label: "sonnet-5.5", id: "claude-sonnet-5-5", speeds: ["slow"] };
@@ -51,6 +54,11 @@ const MODELS: Record<Vendor, Model[]> = {
   "claude-api": [OPUS, SONNET, HAIKU],
   "openai-api": OPENAI,
 };
+for (const provider of catalog.providers) {
+  MODELS[`t3-${provider.id}`] = provider.models.map((m: any) => ({
+    label: m.id, id: m.id, name: m.label, speeds: ["slow"], efforts: m.efforts?.length ? m.efforts : ["medium"],
+  }));
+}
 
 export const EFFORTS = ["low", "medium", "high", "xhigh", "max"];
 
@@ -64,18 +72,23 @@ export const LABELS = [...new Set(Object.values(MODELS).flat().map((m) => m.labe
 export namespace Pick {
 
   export function model(vendor: Vendor, label: string): Model | undefined {
-    return MODELS[vendor].find((m) => m.label === label);
+    return MODELS[vendor]?.find((m) => m.label === label);
+  }
+
+  export function vendor(vendor: Vendor): string {
+    return catalog.providers.find((p) => `t3-${p.id}` === vendor)?.name ?? ({ "claude-api": "Anthropic API", "openai-api": "OpenAI API" }[vendor] ?? vendor);
   }
 
   export function on(pick: Pick, vendor: Vendor, model: Model): Pick {
     const below = SPEEDS.slice(0, SPEEDS.indexOf(pick.speed) + 1);
     const speed = below.filter((s) => model.speeds.includes(s)).pop() ?? "slow";
-    return { ...pick, vendor, model: model.label, speed };
+    const effort = model.efforts && !model.efforts.includes(pick.effort) ? model.efforts.includes("medium") ? "medium" : model.efforts[0] : pick.effort;
+    return { ...pick, vendor, model: model.label, speed, effort };
   }
 
   // the models offered (by label) of these vendors, each with its vendor
   export function models(vendors: Vendor[], labels: string[]): Array<[Vendor, Model]> {
-    return vendors.flatMap((v) => MODELS[v].filter((m) => labels.includes(m.label)).map((m): [Vendor, Model] => [v, m]));
+    return vendors.flatMap((v) => (MODELS[v] ?? []).filter((m) => labels.includes(m.label)).map((m): [Vendor, Model] => [v, m]));
   }
 
   // each with the part the move steps
@@ -91,7 +104,7 @@ export namespace Pick {
       case "up":
       case "down":
       case "effort": {
-        return EFFORTS.map((effort) => [effort, { ...pick, effort }]);
+        return (Pick.model(pick.vendor, pick.model)?.efforts ?? EFFORTS).map((effort) => [effort, { ...pick, effort }]);
       }
       case "speed": {
         return speeds.map((speed) => [speed, { ...pick, speed }]);
@@ -107,7 +120,7 @@ export namespace Pick {
     const ends = move === "up" || move === "down";
     const next = ends ? Math.max(0, Math.min(n - 1, at + d)) : (at + d + n) % n;
     const like = list.filter(([part]) => part.toLowerCase().includes(String(to).toLowerCase()));
-    const hit  = to === undefined ? list[next] : list.find(([part]) => part === to) ?? (like.length === 1 ? like[0] : undefined);
+    const hit  = to === undefined ? list[next] : list.find(([, p]) => Pick.label(p) === to) ?? list.find(([part]) => part === to) ?? (like.length === 1 ? like[0] : undefined);
     return hit === undefined ? null : hit[1];
   }
 
@@ -124,7 +137,7 @@ export namespace Pick {
   // as the chat runs it; null: none
   export function read(x: any, offer: Offer): Pick | null {
     const model = offer.vendors.includes(x.vendor) && offer.models.includes(x.model) ? Pick.model(x.vendor, x.model) : undefined;
-    if (model === undefined || !EFFORTS.includes(x.effort) || !model.speeds.includes(x.speed)) {
+    if (model === undefined || !(model.efforts ?? EFFORTS).includes(x.effort) || !model.speeds.includes(x.speed)) {
       return null;
     }
     return { vendor: x.vendor, model: x.model, effort: x.effort, speed: x.speed };

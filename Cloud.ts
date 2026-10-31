@@ -199,6 +199,17 @@ export namespace Cloud {
     return token;
   }
 
+  export function local(cloud: Cloud, req: Request): Response | null {
+    if (!config.LOCAL || cloud.billing.bills || new URL(req.url).origin !== new URL(config.SITE).origin) {
+      return null;
+    }
+    const user = Billing.here(cloud, "local@localhost");
+    return new Response(null, { status: 302, headers: {
+      location: "/",
+      "set-cookie": COOKIE + "=" + Cloud.session(cloud, user) + KEEP,
+    } });
+  }
+
   export function ticket(cloud: Cloud, data: Ticket, ttl: number): string {
     const token = Cloud.random();
     cloud.db.query("delete from tickets where expires < ?").run(Date.now());
@@ -403,7 +414,7 @@ export namespace Cloud {
     switch (url.pathname) {
       case "/api/me": {
         await billing.balance(user.id);
-        return Response.json({ id: user.id, name: user.name, bills: billing.bills, credits: billing.credits(user.id) });
+        return Response.json({ id: user.id, name: user.name, local: config.LOCAL, bills: billing.bills, credits: billing.credits(user.id) });
       }
       case "/api/account": {
         await billing.balance(user.id);

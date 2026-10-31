@@ -107,7 +107,8 @@ type Saved = Kept & { seen?: Kept; main: End; tree: End; pick: object | null; go
 // each log is indexed; busy: nodes building, by slot, with their side;
 // sides: the side by the last message of nodes not built; calls: those
 // building's calls; hold: why each side is held (null: it builds);
-// wait: checks run as the views change; share: what
+// retries: the timers of builds that threw (a missing local provider),
+// waiting to try once more; wait: checks run as the views change; share: what
 // compactions share with the chat's turns; pay: what pays them (none:
 // free); made, acted: told of each node built, of each act indexed
 export type Memory = {
@@ -128,6 +129,7 @@ export type Memory = {
   sides  : Map<number, number>;
   calls  : Map<Call, Sum>;
   hold   : Array<string | null>;
+  retries: Set<ReturnType<typeof setTimeout>>;
   done   : boolean;
   wait   : Set<() => void>;
   share  : () => Share;
@@ -142,6 +144,10 @@ export type Memory = {
 const NODE  = 512;
 export const JOBS = 64;
 const TRIES = 5;
+// a build that threw (a missing local provider, a stopped ACP process) is
+// tried again after this long, never at once: an immediate retry would
+// throw again and starve every timer and log
+const RETRY = 60e3;
 // a view past its `high` merges to half: the chat's 64-128 KB (96 KB on
 // average), the compactions' 16-32 KB (24 KB)
 const HIGH  = 128000;
@@ -198,7 +204,7 @@ export namespace Memory {
     const mem: Memory = {
       dir, fds: new Map(), count: 0, open: 0, pick: null, goal: null, work: [], nodes: new Map(), agents: new Map(), ready: [[], []], ends: { main: [0, 0], tree: [0, 0] },
       view: { parts: [], size: 0, batch: false, high: HIGH }, seen: { parts: [], size: 0, batch: false, high: SEEN },
-      busy: new Map(), sides: new Map(), calls: new Map(), hold: [null, "paused"], done: false, wait: new Set(), share, acted,
+      busy: new Map(), sides: new Map(), calls: new Map(), hold: [null, "paused"], retries: new Set(), done: false, wait: new Set(), share, acted,
     };
     const saved = Memory.saved(dir);
     mem.pick = saved?.pick ?? null;
@@ -683,18 +689,41 @@ export namespace Memory {
   export function job(mem: Memory, l: number, i: number, text: string, call: Call | null = null): void {
     const key = Memory.slot(l, i);
     mem.busy.set(key, Memory.side(mem, l, i));
-    Memory.build(mem, l, i, text, call).finally(() => {
-      mem.busy.delete(key);
-      Memory.pump(mem);
-      Memory.fit(mem);
-    }).catch((err) => {
-      console.error("compactor: node " + l + "/" + i + ": " + (err?.message ?? err));
-    });
+    Memory.build(mem, l, i, text, call).then(
+      () => {
+        mem.busy.delete(key);
+        if (!mem.done) {
+          Memory.pump(mem);
+          Memory.fit(mem);
+        }
+      },
+      (err) => {
+        mem.busy.delete(key);
+        console.error("compactor: node " + l + "/" + i + ": " + (err?.message ?? err));
+        // A build that threw (a missing local provider, a process the
+        // system ended) is tried again later, never at once: the same
+        // node would throw again and starve every timer.
+        if (mem.done) {
+          return;
+        }
+        const timer = setTimeout(() => {
+          mem.retries.delete(timer);
+          if (!mem.done) {
+            Memory.pump(mem);
+            Memory.fit(mem);
+          }
+        }, RETRY);
+        timer.unref?.();
+        mem.retries.add(timer);
+      },
+    );
   }
 
   // no node starts again (the chat moves: Memory.give)
   export function halt(mem: Memory): void {
     mem.done = true;
+    mem.retries.forEach((timer) => clearTimeout(timer));
+    mem.retries.clear();
   }
 
   // nor runs: those running are cut

@@ -38,6 +38,7 @@ import { Price, type Usage } from "./Price.ts";
 import { live_push } from "./View.ts";
 import { Machine, type Spec } from "./Machine.ts";
 import * as config from "./Config.ts";
+import { LocalAgent } from "./LocalAgent.ts";
 
 // Types
 // =====
@@ -140,6 +141,7 @@ export const READING = { n: 0 };
 export namespace Agent {
 
   export function ask(ask: Ask, on: (ev: Event) => void): Try {
+    if (ask.vendor.startsWith("t3-")) return LocalAgent.ask(ask, on);
     const end = AskAI.end("");
     const run: Run = { ask, on, sent: [], abort: new AbortController(), end };
     const send = (say: Say) => run.sent.push(say);

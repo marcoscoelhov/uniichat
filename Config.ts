@@ -20,19 +20,26 @@ const PATH = DIR + "/config.json";
 const FILE: Record<string, string> = fs.existsSync(PATH) ? JSON.parse(fs.readFileSync(PATH, "utf8")) : {};
 
 export const SITE    = config_get("site", "http://127.0.0.1:8788").replace(/\/$/, "");
+// A personal loopback server can open its local chat without email sign-in.
+export const LOCAL   = config_get("local", "0") === "1" && ["127.0.0.1", "localhost", "[::1]"].includes(new URL(SITE).hostname);
+export const T3      = LOCAL && config_get("t3", "0") === "1";
+// The models offered default to every label, kept as an array: a local
+// provider's label can itself hold a comma (a DSH model is a JSON pair), so
+// joining the labels to split them again would cut it in pieces.
+const MODELS = config_get("models", "");
 export const OFFER: Offer = {
-  vendors : config_vendors(config_get("vendors", "claude-api")),
-  models  : config_get("models", LABELS.join()).split(",").map((m) => m.trim()),
+  vendors : config_vendors(config_get("vendors", T3 ? VENDORS.filter((v) => v.startsWith("t3-")).join() : "claude-api")),
+  models  : MODELS === "" ? LABELS : MODELS.split(",").map((m) => m.trim()),
 };
 
 export const WORK       = config_path(config_get("work", DIR + "/work"));
 export const RULES      = config_path(config_get("rules", ""));
 export const AFTER      = config_get("after", "");
-export const PICK       = config_run("pick", config_get("pick", "claude-api:sonnet-5.5:medium:slow"));
+export const PICK       = config_run("pick", config_get("pick", T3 ? "t3-codex:gpt-6.1-sol:medium:slow" : "claude-api:sonnet-5.5:medium:slow"));
 
 // what every compaction runs on, a chat's and an import's alike, whatever
 // the chat's pick
-export const COMPACTOR  = config_run("compactor", config_get("compactor", "claude-api:haiku-5.5:high:slow"));
+export const COMPACTOR  = config_run("compactor", config_get("compactor", T3 ? "t3-codex:gpt-6-luna:high:slow" : "claude-api:haiku-5.5:high:slow"));
 export const AGENTS     = config_get("agents", "") ? config_run("agents", config_get("agents", "")) : null;
 export const WORKERS    = Number(config_get("workers", "0"));
 
@@ -63,7 +70,11 @@ function config_path(path: string): string {
 }
 
 function config_run(key: string, text: string): Pick {
-  const [vendor, model, effort, speed] = text.split(":");
+  // ACP model ids may themselves contain colons (Hermes) or JSON arrays.
+  const [vendor, ...parts] = text.split(":");
+  const speed = parts.pop();
+  const effort = parts.pop();
+  const model = parts.join(":");
   const pick = Pick.read({ vendor, model, effort, speed }, OFFER);
   if (pick === null) {
     throw new Error("config: " + key + " is no vendor:model:effort:speed offered here: " + text);

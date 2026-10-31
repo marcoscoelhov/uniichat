@@ -17,6 +17,8 @@ import * as Import from "../../Import.ts";
 import { theme_css } from "../../Theme.ts";
 import * as View from "../../View.ts";
 import * as Html from "./Html.ts";
+import { Pick, T3_PROVIDERS } from "../../Pick.ts";
+import type { Vendor } from "../../AskAI.ts";
 
 // Types
 // =====
@@ -131,6 +133,7 @@ async function boot(): Promise<void> {
     return;
   }
   P.id = me.id;
+  if (me.local) localStorage.setItem(kept("welcomed"), "1");
   signed();
   route();
   v.bills = me.bills;
@@ -239,6 +242,7 @@ function chat(): void {
   $("#wallet").insertAdjacentHTML("beforeend", Html.credit_html(APP !== null));
   onpopstate = route;
   importer();
+  provider_setup();
   document.ondragover = (ev) => ev.preventDefault();
   document.ondrop = (ev) => {
     ev.preventDefault();
@@ -327,6 +331,58 @@ function act(a: View.Act): void {
     View.link_send(v, msg, a.$ === "Send" ? (out) => back(a, out) : undefined, said);
   }
   draw(a.$ === "Send");
+}
+
+// Providers are grouped separately from models: a catalog like Hermes can
+// expose hundreds of models without filling the composer or cycling them.
+function provider_setup(): void {
+  const popover = $("#providers");
+  const search = $<HTMLInputElement>("#providers .provider-search");
+  let selected: Vendor | null = null;
+  const render = () => {
+    const query = search.value.trim().toLocaleLowerCase();
+    const vendors = v.vendors;
+    selected = vendors.includes(selected!) ? selected : v.pick?.vendor ?? vendors[0];
+    const esc = Html.esc;
+    $("#providers .provider-list").innerHTML = vendors.map((vendor) => {
+      const count = Pick.models([vendor], v.models).length;
+      const meta = T3_PROVIDERS.find((p) => `t3-${p.id}` === vendor);
+      return `<button type="button" data-provider="${esc(vendor)}" aria-pressed="${selected === vendor}" title="${esc(meta?.detail ?? "API")}"><span><i class="provider-dot ${meta?.status === "ready" ? "ready" : "attention"}"></i>${esc(Pick.vendor(vendor))}</span><small>${count}</small></button>`;
+    }).join("");
+    for (const button of popover.querySelectorAll<HTMLButtonElement>("[data-provider]")) {
+      button.onclick = () => { selected = button.dataset.provider as Vendor; search.value = ""; render(); };
+    }
+    const shown = query ? vendors : [selected!];
+    const groups = shown.map((vendor) => {
+      const meta = T3_PROVIDERS.find((p) => `t3-${p.id}` === vendor);
+      const models = Pick.models([vendor], v.models).filter(([, model]) => !query || `${Pick.vendor(vendor)} ${model.name ?? ""} ${model.id}`.toLocaleLowerCase().includes(query));
+      if (!models.length) return "";
+      const status = meta?.detail ?? "Conexão por chave de API";
+      return `<div class="provider-group"><h3>${esc(Pick.vendor(vendor))}<span>${models.length}</span></h3><p class="provider-status${meta?.status === "needs-attention" ? " warning" : ""}">${esc(status)}</p>${models.map(([, model]) => {
+        const on = v.pick?.vendor === vendor && v.pick?.model === model.label;
+        const next = v.pick ? Pick.on(v.pick, vendor, model) : null;
+        const free = /(^|[-_/:.])free($|[-_/:.])/i.test(model.id) || model.id === "opencode/big-pickle";
+        return `<button type="button" class="provider-model${on ? " selected" : ""}" data-pick="${esc(next ? Pick.label(next) : "")}" aria-pressed="${on}"><span><strong>${esc(model.name ?? model.label)}${free ? ' <em class="free">grátis</em>' : ""}</strong><small>${esc(model.id)}</small></span><span class="provider-check">${on ? "✓" : ""}</span></button>`;
+      }).join("")}</div>`;
+    });
+    $("#providers .provider-models").innerHTML = groups.some(Boolean) ? groups.join("") : '<p class="provider-empty">Nenhum modelo encontrado.</p>';
+    for (const button of popover.querySelectorAll<HTMLButtonElement>("[data-pick]")) {
+      button.onclick = () => {
+        if (button.dataset.pick) act({ $: "Move", move: "model", to: button.dataset.pick });
+        popover.hidePopover();
+        BOX.focus();
+      };
+    }
+  };
+  search.oninput = render;
+  popover.addEventListener("toggle", (event) => {
+    if ((event as ToggleEvent).newState === "open") {
+      selected = v.pick?.vendor ?? null;
+      search.value = "";
+      render();
+      search.focus();
+    }
+  });
 }
 
 // a click on a View.Act, a Copy button, a page (go) or credit to buy

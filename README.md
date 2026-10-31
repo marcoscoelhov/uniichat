@@ -77,6 +77,8 @@ also be set as the variable `UNII_<KEY>`:
 - `site`: the server's origin, for sign-in links (default
   http://127.0.0.1:8788). Another port: `UNII_SITE=http://127.0.0.1:9000
   bun Server.ts 9000`.
+- `local`: set to `1` to open a personal chat directly, without email or
+  the introduction. Only available with a loopback `site` on a free server.
 - `vendors`: what the server offers, comma-separated: `claude-api`
   (default), `openai-api`.
 - `models`: the models offered, by label (Pick.ts; default all).
@@ -106,6 +108,42 @@ UNII_COMPACTOR=openai-api:gpt-6-luna:high:slow`.
 A self-hosted server is free: it bills no one, shows no prices, and calls
 only the model vendors. Billing.ts is the one place a hosted server
 plugs in its billing (uniichat.com sells credits; this repo has none).
+
+Local T3 Code providers
+----------------------
+
+For this local installation, `bun run sync:t3` imports the enabled T3
+providers and their model catalogs. Command paths stay in
+`~/.unii/t3-runtimes.json`; the browser receives only public model metadata.
+Credentials remain in each provider's own store. Disabled T3 providers
+are excluded. No T3 threads are created by this integration.
+
+Set `"local": "1", "t3": "1"` in `~/.unii/config.json`, run
+`bun run web`, then restart `bun Server.ts`. The default chat uses Codex
+Sol; summaries use Codex Luna. The model button opens a searchable selector
+grouped by provider. Model choice is saved with the chat. A grouped ACP
+catalog (DSH) names each route it serves (`Open Gateway · …`, `Open Design ·
+…`, `DeepSeek oficial · …`), and a model whose id marks it free (OpenCode's
+free roster, `big-pickle`) carries a `grátis` tag.
+
+A compactor of the local integration runs through the same adapter as a
+turn. When its provider is missing (a disabled T3 provider, an expired
+login), the summary waits and is tried again in a minute; it never spins or
+throws away the chat. Set `UNII_COMPACTOR` (or `compactor` in config.json)
+to a working provider, e.g. `t3-opencode:opencode/mimo-v2.6-flash-free:medium:slow`.
+
+`bun run check:t3` makes one short real call per provider, consuming its
+normal quota, and records connection health outside the chat. To check only
+one connection, use e.g. `bun run check:t3 codex`. After checking, sync,
+rebuild, and restart to refresh the displayed status. A catalog entry is
+not a guarantee that the account has access or remaining quota for every
+model. Shared or production deployments must keep this local integration
+disabled.
+
+These adapters use text completions and Unii's existing tool/memory loop.
+Responses appear once a provider completion finishes. Image input currently
+requires an API adapter. Native CLI tools are disabled or refused; Unii's
+tools are validated, run, and logged by its own server.
 
 The `unii` terminal
 -------------------
